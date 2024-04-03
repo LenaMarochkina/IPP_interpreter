@@ -1,0 +1,24 @@
+{
+    "config": {
+        "platform": {
+            "php": "8.3"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "IPP\\Core\\": "core/",
+            "IPP\\Student\\": "student/"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "spaze/phpstan-disallowed-calls": "^3.1",
+        "permafrost-dev/phpcsfixer-preset": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.52"
+    },
+    "scripts": {
+        "phpstan": [
+            "XDEBUG_MODE=off vendor/bin/phpstan"
+        ]
+    }
+}
