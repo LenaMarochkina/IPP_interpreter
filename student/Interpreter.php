@@ -2,6 +2,7 @@
 
 namespace IPP\Student;
 
+use DivisionByZeroError;
 use Exception;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
@@ -9,6 +10,7 @@ use IPP\Student\Exception\OperandTypeException;
 
 use DOMElement;
 use DOMAttr;
+use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
 
 global $MATH_MAP;
@@ -225,7 +227,11 @@ class Interpreter extends AbstractInterpreter
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
 
         $resultVariable->setType(E_ARGUMENT_TYPE::INT);
-        $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
+        try {
+            $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
+        } catch (DivisionByZeroError $e) {
+            throw new OperandValueException("Division by zero");
+        }
     }
 
     public function execute(): int
