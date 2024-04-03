@@ -1,0 +1,23 @@
+.IPPcode24
+DEFVAR GF@result
+DEFVAR GF@left
+DEFVAR GF@right
+MOVE GF@left int@2
+MOVE GF@right int@3
+ADD GF@result GF@left GF@right
+WRITE GF@result
+WRITE string@\010
+SUB GF@result GF@result GF@right
+WRITE GF@result
+WRITE string@\010
+MUL GF@result GF@result GF@right
+WRITE GF@result
+WRITE string@\010
+IDIV GF@result GF@result GF@right
+WRITE GF@result
+WRITE string@\010
+WRITE bool@false
+WRITE string@\010
+WRITE bool@true
+WRITE string@\010
+WRITE string@řetězec\032s\032lomítkem\032\092\032a\010novým\035řádkem
