@@ -13,7 +13,7 @@ enum E_ARGUMENT_TYPE: string
     case BOOL = 'bool';
     case TYPE = 'type';
 
-    public function isVariableType(): bool
+    public function isLiteralType(): bool
     {
         return in_array($this, [self::INT, self::STRING, self::BOOL]);
     }

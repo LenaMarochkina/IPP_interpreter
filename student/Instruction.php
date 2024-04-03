@@ -60,9 +60,9 @@ class Instruction
      * Get argument at index
      *
      * @param int $index index of the argument
-     * @return Argument argument at index
+     * @return Argument|null argument at index
      */
-    public function getArgument(int $index): Argument
+    public function getArgument(int $index): Argument|null
     {
         return $this->_arguments[$index];
     }

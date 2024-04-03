@@ -50,5 +50,15 @@ class GenericStack
     {
         return empty($this->items);
     }
+
+    /**
+     * Returns the element at the top of the stack without removing it.
+     *
+     * @return T | null The element at the top of the stack.
+     */
+    public function getLastItem(): mixed
+    {
+        return end($this->items);
+    }
 }
 

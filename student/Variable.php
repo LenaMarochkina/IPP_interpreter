@@ -10,7 +10,7 @@ class Variable
      * @var string Variable name
      */
     private string $name;
-    
+
     /**
      * @var string|null Variable value
      */
@@ -52,7 +52,7 @@ class Variable
      */
     public function setType(E_ARGUMENT_TYPE $type): void
     {
-        if (!$type->isVariableType()) {
+        if (!$type->isLiteralType()) {
             throw new SemanticException("Invalid variable type '$type->value' [$type->name]");
         }
 
@@ -82,6 +82,20 @@ class Variable
     public function getValue(): string|null
     {
         return $this->value;
+    }
+
+    /**
+     * Return variable value based on type
+     *
+     * @return string|int|bool|null Typed value
+     */
+    public function getTypedValue(): string|int|bool|null
+    {
+        return match ($this->type) {
+            E_ARGUMENT_TYPE::INT => intval($this->value),
+            E_ARGUMENT_TYPE::BOOL => $this->value == 'true',
+            default => $this->value
+        };
     }
 
     /**

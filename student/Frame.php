@@ -45,7 +45,7 @@ class Frame
      */
     public function getVariable(string $name): Variable
     {
-        if (!array_key_exists($name, $this->variables)) {
+        if (!$this->containsVariable($name)) {
             throw new SemanticException("Variable $name does not exist in frame {$this->frame->value}");
         }
 
