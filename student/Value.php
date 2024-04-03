@@ -41,11 +41,30 @@ class Value
             throw new SemanticException("Invalid variable type '$type->value' [{$type->name}]");
         }
 
-        return match ($type) {
-            E_ARGUMENT_TYPE::INT => (int)$this->value,
-            E_ARGUMENT_TYPE::STRING => $this->value,
-            E_ARGUMENT_TYPE::BOOL => $this->value === 'true',
-            default => null,
-        };
+        $value = $this->value;
+
+        if ($type === E_ARGUMENT_TYPE::STRING) {
+            $value = preg_replace_callback('/\\\\[0-9]{3}/', function ($match) {
+                return mb_chr(substr($match[0], 1));
+            }, $value);
+        }
+
+        if ($type === E_ARGUMENT_TYPE::BOOL) {
+            if ($value !== 'true' && $value !== 'false') {
+                throw new SemanticException("Invalid boolean value '$value'");
+            }
+
+            $value = $value === 'true';
+        }
+
+        if ($type === E_ARGUMENT_TYPE::INT) {
+            if (!is_numeric($value)) {
+                throw new SemanticException("Invalid integer value '$value'");
+            }
+
+            $value = (int)$value;
+        }
+
+        return $value;
     }
 }

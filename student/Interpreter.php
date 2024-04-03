@@ -389,7 +389,7 @@ class Interpreter extends AbstractInterpreter
                     case E_ARGUMENT_TYPE::INT:
                     case E_ARGUMENT_TYPE::STRING:
                     case E_ARGUMENT_TYPE::BOOL:
-                        $this->runOutput($argument->getType(), $argument->getStringValue());
+                        $this->runOutput($argument->getType(), $argument->getTypedValue());
 
                         break;
                     case E_ARGUMENT_TYPE::VAR:
