@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Interpret Temp" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interpret.php" scriptParameters="--source temp.xml --input temp.txt">
     <method v="2">
-      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Parse temp.xml" run_configuration_type="ShConfigurationType" />
+      <option name="FwBeforeLaunchTask" enabled="true" />
     </method>
   </configuration>
 </component>
