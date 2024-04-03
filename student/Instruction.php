@@ -47,6 +47,8 @@ class Instruction
     }
 
     /**
+     * Get instruction arguments
+     *
      * @return Argument[] array of instruction arguments
      */
     public function getArguments(): array
@@ -55,6 +57,19 @@ class Instruction
     }
 
     /**
+     * Get argument at index
+     *
+     * @param int $index index of the argument
+     * @return Argument argument at index
+     */
+    public function getArgument(int $index): Argument
+    {
+        return $this->_arguments[$index];
+    }
+
+    /**
+     * Get instruction order
+     *
      * @return int order of the instruction
      */
     public function getOrder(): int

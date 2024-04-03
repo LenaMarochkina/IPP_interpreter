@@ -6,44 +6,65 @@ use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
 use IPP\Student\Exception\OperandTypeException;
 
-$a = new \DS\Stack();
-
 use DOMElement;
-use DOMNode;
 use DOMAttr;
 use IPP\Student\Exception\SemanticException;
 
 class Interpreter extends AbstractInterpreter
 {
-    /** @var Variable[] internal variables */
-    private array $variables = [];
+    private Frame $globalFrame;
 
-    private function containsGlobalVariable(string $name): bool
+    protected function init(): void
     {
-        foreach ($this->variables as $variable) {
-            if ($variable->getName() == $name && $variable->getFrame() == E_VARIABLE_FRAME::GF) {
-                return true;
-            }
-        }
-        return false;
+        parent::init();
+
+        $this->globalFrame = new Frame(E_VARIABLE_FRAME::GF);
     }
 
     /**
-     * @param string $name
-     * @return void
-     * @throws OperandTypeException
+     * Check if global variable exists
+     *
+     * @param string $name Variable name
+     * @throws OperandTypeException If variable does not exist
      */
     private function checkGlobalVariableExists(string $name): void
     {
-        if (!$this->containsGlobalVariable($name)) {
-            throw new OperandTypeException("Variable $name does not exist");
+        if (!$this->globalFrame->containsVariable($name)) {
+            throw new OperandTypeException("Variable $name does not exist in global frame");
+        }
+    }
+
+    /**
+     * Output value to stdout
+     *
+     * @param E_ARGUMENT_TYPE $type Output value type
+     * @param string|null $value Output value
+     * @return void
+     * @throws OperandTypeException If value type is not a variable type and cannot be written to output
+     */
+    private function runOutput(E_ARGUMENT_TYPE $type, string|null $value): void
+    {
+        if (!$type->isVariableType()) {
+            throw new OperandTypeException("Value with type $type->value cannot be written to output");
+        }
+
+        switch ($type) {
+            case E_ARGUMENT_TYPE::INT:
+                $this->stdout->writeInt((int)$value);
+                break;
+            case E_ARGUMENT_TYPE::STRING:
+                $this->stdout->writeString($value);
+                break;
+            case E_ARGUMENT_TYPE::BOOL:
+                $this->stdout->writeBool($value == "true");
+                break;
+            default:
+                throw new OperandTypeException("Invalid argument type $type->value for WRITE instruction");
         }
     }
 
     public function execute(): int
     {
-        // TODO: Start your code here
-        //Check \IPP\Core\AbstractInterpreter for predefined I/O objects:
         $dom = $this->source->getDOMDocument();
 
         $parsedInstructions = [];
@@ -76,7 +97,7 @@ class Interpreter extends AbstractInterpreter
                 throw new XMLException("Invalid order attribute at $index ($instructionElement->textContent)");
             }
 
-            $instructionName = E_INSTRUCTION_NAME::{E_INSTRUCTION_NAME::fromValue($opcodeAttribute->nodeValue)};
+            $instructionName = E_INSTRUCTION_NAME::fromValue($opcodeAttribute->nodeValue);
 
             $argumentElements = $instructionElement->childNodes;
             $parsedArguments = [];
@@ -113,16 +134,6 @@ class Interpreter extends AbstractInterpreter
             $this->executeInstruction($instruction);
         }
 
-//        $val = $this->input->readInt();
-//        // WRITE string@hello!
-//        if ($val) $this->stdout->writeInt($val);
-//        $this->stdout->writeString("\n");
-//
-//        $val = $this->input->readString();
-//        if ($val) $this->stdout->writeString($val);
-//        $this->stdout->writeString("\n");
-//        throw new NotImplementedException;
-
         return 0;
     }
 
@@ -130,60 +141,56 @@ class Interpreter extends AbstractInterpreter
      * @throws OperandTypeException
      * @throws SemanticException
      */
-    public function executeInstruction(Instruction $instruction): void
+    private function executeInstruction(Instruction $instruction): void
     {
         switch ($instruction->getName()) {
             case E_INSTRUCTION_NAME::DEFVAR:
-                $argument = $instruction->getArguments()[0];
+                $argument = $instruction->getArgument(0);
 
-                $this->variables[] = Variable::parseVariableName($argument->getValue());
+                [$variableFrame, $variableName] = Variable::parseVariableName($argument->getValue());
+
+                // TODO: create variable in specified frame
+
+                $this->globalFrame->createVariable($variableName, $argument->getType());
                 break;
             case E_INSTRUCTION_NAME::MOVE:
-                $argumentVariable = $instruction->getArguments()[0];
-                $argumentValue = $instruction->getArguments()[1];
+                [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
-                [, $argVariableName] = explode('@', $argumentVariable->getValue());
+                [, $argVariableName] = Variable::parseVariableName($argumentVariable->getValue());
 
                 $this->checkGlobalVariableExists($argVariableName);
 
-                foreach ($this->variables as $variable) {
-                    if ($variable->getName() == $argVariableName) {
-                        $variable->setValue($argumentValue->getValue());
-                        break;
-                    }
-                }
+                $this->globalFrame->getVariable($argVariableName)->setType($argumentValue->getType());
+                $this->globalFrame->getVariable($argVariableName)->setValue($argumentValue->getValue());
 
                 break;
             case E_INSTRUCTION_NAME::WRITE:
-                $argument = $instruction->getArguments()[0];
+                $argument = $instruction->getArgument(0);
                 switch ($argument->getType()) {
                     case E_ARGUMENT_TYPE::INT:
-                        $this->stdout->writeInt((int)$argument->getValue());
-                        break;
                     case E_ARGUMENT_TYPE::STRING:
-                        $this->stdout->writeString($argument->getValue());
-                        break;
                     case E_ARGUMENT_TYPE::BOOL:
-                        $this->stdout->writeBool($argument->getValue() == "true");
+                        $this->runOutput($argument->getType(), $argument->getValue());
                         break;
                     case E_ARGUMENT_TYPE::VAR:
-                        foreach ($this->variables as $variable) {
-                            [$argVariableFrame, $argVariableName] = explode('@', $argument->getValue());
+                        [$argVariableFrame, $argVariableName] = Variable::parseVariableName($argument->getValue());
 
-                            $this->checkGlobalVariableExists($argVariableName);
+                        // TODO: check in frame
 
-                            if ($variable->getName() == $argVariableName) {
-                                $this->stdout->writeString($variable->getValue());
-                                break;
-                            }
-                        }
+                        $this->checkGlobalVariableExists($argVariableName);
+
+                        $this->runOutput(
+                            $this->globalFrame->getVariable($argVariableName)->getType(),
+                            $this->globalFrame->getVariable($argVariableName)->getValue()
+                        );
+
                         break;
                     default:
                         throw new OperandTypeException("Invalid argument type for WRITE instruction");
                 }
                 break;
             default:
-                throw new SemanticException("Unknown instruction " . $instruction->getName());
+                throw new SemanticException("Unknown instruction " . $instruction->getName()->value);
         }
     }
 }

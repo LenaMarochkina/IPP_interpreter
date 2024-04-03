@@ -42,23 +42,21 @@ enum E_INSTRUCTION_NAME: string
     case DPRINT = 'DPRINT';
     case BREAK = 'BREAK';
 
-    public static function fromName(string $name): string
-    {
-        foreach (self::cases() as $status) {
-            if ($name === $status->name) {
-                return $status->value;
-            }
-        }
-        throw new SemanticException("$name is not a valid instruction " . self::class);
-    }
-
-    public static function fromValue(string $value): string
+    /**
+     * Get instruction name by value
+     *
+     * @param string $value Instruction name
+     * @return E_INSTRUCTION_NAME Instruction name
+     * @throws SemanticException If value is not a valid instruction
+     */
+    public static function fromValue(string $value): E_INSTRUCTION_NAME
     {
         foreach (self::cases() as $status) {
             if ($value === $status->value) {
-                return $status->name;
+                return E_INSTRUCTION_NAME::{$status->name};
             }
         }
+
         throw new SemanticException("$value is not a valid instruction " . self::class);
     }
 }

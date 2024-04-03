@@ -25,12 +25,13 @@ class Frame
      * Create variable
      *
      * @param string $name Variable name
+     * @param E_ARGUMENT_TYPE $type Variable type
      * @param string|null $value Variable value
      * @return Variable Created variable
      */
-    public function createVariable(string $name, string|null $value = null): Variable
+    public function createVariable(string $name, E_ARGUMENT_TYPE $type, string|null $value = null): Variable
     {
-        $variable = new Variable($name, $value, $this->frame);
+        $variable = new Variable($name, $type, $value);
         $this->variables[$name] = $variable;
         return $variable;
     }
@@ -45,8 +46,20 @@ class Frame
     public function getVariable(string $name): Variable
     {
         if (!array_key_exists($name, $this->variables)) {
-            throw new SemanticException("Variable $name does not exist in frame " . $this->frame->value);
+            throw new SemanticException("Variable $name does not exist in frame {$this->frame->value}");
         }
+
         return $this->variables[$name];
+    }
+
+    /**
+     * Check if variable exists in frame
+     *s
+     * @param string $name Variable name
+     * @return bool True if variable exists, false otherwise
+     */
+    public function containsVariable(string $name): bool
+    {
+        return array_key_exists($name, $this->variables);
     }
 }
