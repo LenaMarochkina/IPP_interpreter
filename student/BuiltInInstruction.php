@@ -4,6 +4,40 @@ namespace IPP\Student;
 
 use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
+use IPP\Student\Instructions\ADDInstruction;
+use IPP\Student\Instructions\ANDInstruction;
+use IPP\Student\Instructions\CALLInstruction;
+use IPP\Student\Instructions\CONCATInstruction;
+use IPP\Student\Instructions\CREATEFRAMEInstruction;
+use IPP\Student\Instructions\DEFVARInstruction;
+use IPP\Student\Instructions\EQInstruction;
+use IPP\Student\Instructions\EXITInstruction;
+use IPP\Student\Instructions\GETCHARInstruction;
+use IPP\Student\Instructions\GTInstruction;
+use IPP\Student\Instructions\IDIVInstruction;
+use IPP\Student\Instructions\InstructionInterface;
+use IPP\Student\Instructions\INT2CHARInstruction;
+use IPP\Student\Instructions\JUMPIFEQInstruction;
+use IPP\Student\Instructions\JUMPIFNEQInstruction;
+use IPP\Student\Instructions\JUMPInstruction;
+use IPP\Student\Instructions\LABELInstruction;
+use IPP\Student\Instructions\LTInstruction;
+use IPP\Student\Instructions\MOVEInstruction;
+use IPP\Student\Instructions\MULInstruction;
+use IPP\Student\Instructions\NOTInstruction;
+use IPP\Student\Instructions\ORInstruction;
+use IPP\Student\Instructions\POPFRAMEInstruction;
+use IPP\Student\Instructions\POPSInstruction;
+use IPP\Student\Instructions\PUSHFRAMEInstruction;
+use IPP\Student\Instructions\PUSHSInstruction;
+use IPP\Student\Instructions\READInstruction;
+use IPP\Student\Instructions\RETURNInstruction;
+use IPP\Student\Instructions\SETCHARInstruction;
+use IPP\Student\Instructions\STRI2INTInstruction;
+use IPP\Student\Instructions\STRLENInstruction;
+use IPP\Student\Instructions\SUBInstruction;
+use IPP\Student\Instructions\TYPEInstruction;
+use IPP\Student\Instructions\WRITEInstruction;
 
 global $INSTRUCTIONS;
 
@@ -11,129 +45,129 @@ $INSTRUCTIONS = [
     new BuiltInInstruction(E_INSTRUCTION_NAME::MOVE, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
-    new BuiltInInstruction(E_INSTRUCTION_NAME::CREATEFRAME, []),
-    new BuiltInInstruction(E_INSTRUCTION_NAME::PUSHFRAME, []),
-    new BuiltInInstruction(E_INSTRUCTION_NAME::POPFRAME, []),
+    ], new MOVEInstruction()),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::CREATEFRAME, [], new CREATEFRAMEInstruction()),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::PUSHFRAME, [], new PUSHFRAMEInstruction()),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::POPFRAME, [], new POPFRAMEInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::DEFVAR, [
         [E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new DEFVARInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::CALL, [
         [E_ARGUMENT_TYPE::LABEL]
-    ]),
-    new BuiltInInstruction(E_INSTRUCTION_NAME::RETURN, []),
+    ], new CALLInstruction()),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::RETURN, [], new RETURNInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::PUSHS, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new PUSHSInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::POPS, [
         [E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new POPSInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::ADD, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
-    ]),
+    ], new ADDInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::SUB, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new SUBInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::MUL, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new MULInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::IDIV, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new IDIVInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::LT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new LTInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::GT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new GTInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::EQ, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new EQInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::AND, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new ANDInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::OR, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new ORInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::NOT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new NOTInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::INT2CHAR, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new INT2CHARInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::STRI2INT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new STRI2INTInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::READ, [
         [E_ARGUMENT_TYPE::VAR], [E_ARGUMENT_TYPE::TYPE]
-    ]),
+    ], new READInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::WRITE, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new WRITEInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::CONCAT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new CONCATInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::STRLEN, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new STRLENInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::GETCHAR, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new GETCHARInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::SETCHAR, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new SETCHARInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::TYPE, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new TYPEInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::LABEL, [
         [E_ARGUMENT_TYPE::LABEL]
-    ]),
+    ], new LABELInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::JUMP, [
         [E_ARGUMENT_TYPE::LABEL]
-    ]),
+    ], new JUMPInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::JUMPIFEQ, [
         [E_ARGUMENT_TYPE::LABEL],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new JUMPIFEQInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::JUMPIFNEQ, [
         [E_ARGUMENT_TYPE::LABEL],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new JUMPIFNEQInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::EXIT, [
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
-    ]),
+    ], new EXITInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::DPRINT, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
     ]),
@@ -154,19 +188,23 @@ class BuiltInInstruction
      */
     private array $args;
 
+    private ?InstructionInterface $instruction;
+
     /**
      * @param E_INSTRUCTION_NAME $name name of the instruction
      * @param E_ARGUMENT_TYPE[][] $args types of arguments
      */
-    public function __construct(E_INSTRUCTION_NAME $name, array $args)
+    public function __construct(E_INSTRUCTION_NAME $name, array $args, ?InstructionInterface $instruction = null)
     {
         $this->name = $name;
         $this->args = $args;
+        $this->instruction = $instruction;
     }
 
     public static function getInstruction(E_INSTRUCTION_NAME $name): BuiltInInstruction
     {
         global $INSTRUCTIONS;
+
         foreach ($INSTRUCTIONS as $instruction) {
             if ($instruction->getName() === $name) {
                 return $instruction;
@@ -237,5 +275,10 @@ class BuiltInInstruction
                 throw new OperandTypeException("Wrong type of argument {$arg->getStringValue()} at {$index} position for instruction '{$this->name->value}'");
             }
         }
+    }
+
+    public function getExecutionInstruction(): ?InstructionInterface
+    {
+        return $this->instruction;
     }
 }
