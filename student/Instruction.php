@@ -64,6 +64,10 @@ class Instruction
      */
     public function getArgument(int $index): Argument|null
     {
+        if (!isset($this->_arguments[$index])) {
+            return null;
+        }
+
         return $this->_arguments[$index];
     }
 

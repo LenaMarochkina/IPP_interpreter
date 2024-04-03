@@ -21,3 +21,21 @@ WRITE string@\010
 WRITE bool@true
 WRITE string@\010
 WRITE string@řetězec\032s\032lomítkem\032\092\032a\010novým\035řádkem
+WRITE string@\010
+CREATEFRAME
+DEFVAR TF@bool_result
+DEFVAR TF@bool_left
+DEFVAR TF@bool_right
+PUSHFRAME
+GT LF@bool_left int@3 int@2
+LT LF@bool_right int@2 int@1
+AND LF@bool_result LF@bool_left LF@bool_right
+WRITE LF@bool_result
+WRITE string@\010
+OR LF@bool_result LF@bool_left LF@bool_right
+WRITE LF@bool_result
+WRITE string@\010
+NOT LF@bool_result LF@bool_left
+WRITE LF@bool_result
+WRITE string@\010
+POPFRAME

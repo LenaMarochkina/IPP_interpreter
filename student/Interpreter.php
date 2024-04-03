@@ -38,6 +38,19 @@ $RELATIONAL_MAP = [
     E_INSTRUCTION_NAME::EQ->value => fn(mixed $a, mixed $b) => $a == $b,
 ];
 
+global $BOOL_MAP;
+
+/**
+ * Bool map
+ *
+ * @var array{E_INSTRUCTION_NAME: callable(bool, bool): bool} $BOOL_MAP
+ */
+$BOOL_MAP = [
+    E_INSTRUCTION_NAME::AND->value => fn(bool $a, bool $b) => $a && $b,
+    E_INSTRUCTION_NAME::OR->value => fn(bool $a, bool $b) => $a || $b,
+    E_INSTRUCTION_NAME::NOT->value => fn(bool $a) => !$a,
+];
+
 class Interpreter extends AbstractInterpreter
 {
     private Frame $globalFrame;
@@ -268,7 +281,34 @@ class Interpreter extends AbstractInterpreter
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
 
         $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
-        $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
+        $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
+    }
+
+    private function runBool(Instruction $instruction): void
+    {
+        global $BOOL_MAP;
+        $resultVariableArgument = $instruction->getArgument(0);
+        $leftOperand = $instruction->getArgument(1);
+        $rightOperand = $instruction->getArgument(2);
+
+        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
+            if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::BOOL)) {
+                throw new OperandTypeException("NOT instruction operand must be of type bool");
+            }
+        } else {
+            if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::BOOL) || !$this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::BOOL)) {
+                throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of type bool");
+            }
+        }
+
+        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
+        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
+
+        $func = $BOOL_MAP[$instruction->getName()->value];
+        $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+
+        $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
+        $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
     }
 
     public function execute(): int
@@ -414,6 +454,11 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::GT:
             case E_INSTRUCTION_NAME::EQ:
                 $this->runRelational($instruction);
+                break;
+            case E_INSTRUCTION_NAME::AND:
+            case E_INSTRUCTION_NAME::OR:
+            case E_INSTRUCTION_NAME::NOT:
+                $this->runBool($instruction);
                 break;
             default:
                 throw new SemanticException("Unknown instruction " . $instruction->getName()->value);
