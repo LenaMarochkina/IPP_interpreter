@@ -1,1 +1,1 @@
-python /Users/nikitamoiseev/PhpstormProjects/IPP_Project1/parse.py < $1 > $2
+python /Users/nikitamoiseev/PhpstormProjects/IPP_project2/parse.py < $1 > $2

@@ -417,10 +417,8 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::MOVE:
                 [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
-                [$argVariableFrame, $argVariableName] = Variable::parseVariableName($argumentVariable->getStringValue());
-
-                $this->getVariableFrame($argVariableFrame)->getVariable($argVariableName)->setType($argumentValue->getType());
-                $this->getVariableFrame($argVariableFrame)->getVariable($argVariableName)->setValue($argumentValue->getStringValue());
+                $this->getArgumentVariable($argumentVariable)->setType($argumentValue->getType());
+                $this->getArgumentVariable($argumentVariable)->setValue($argumentValue->getStringValue());
 
                 break;
             case E_INSTRUCTION_NAME::WRITE:
@@ -459,6 +457,49 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::OR:
             case E_INSTRUCTION_NAME::NOT:
                 $this->runBool($instruction);
+                break;
+            case E_INSTRUCTION_NAME::INT2CHAR:
+                [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
+
+                if (!$this->isOperandTypeOf($argumentValue, E_ARGUMENT_TYPE::INT)) {
+                    throw new OperandTypeException("INT2CHAR instruction operand must be of type int");
+                }
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+                $this->getArgumentVariable($argumentVariable)->setValue(mb_chr($this->getOperandTypedValue($argumentValue)));
+
+                break;
+            case E_INSTRUCTION_NAME::STRI2INT:
+                [
+                    $argumentVariable,
+                    $argumentString,
+                    $argumentIndex
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                    $instruction->getArgument(2),
+                ];
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new OperandTypeException("STRI2INT instruction first operand must be of type string");
+                }
+
+                if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
+                    throw new OperandTypeException("STRI2INT instruction second operand must be of type int");
+                }
+
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
+
+                if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
+                    throw new OperandValueException("STRI2INT instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
+                }
+
+                $charCode = mb_ord($argumentStringValue[$argumentIndexValue]);
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
+                $this->getArgumentVariable($argumentVariable)->setValue(strval($charCode));
+
                 break;
             default:
                 throw new SemanticException("Unknown instruction " . $instruction->getName()->value);

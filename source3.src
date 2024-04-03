@@ -39,3 +39,48 @@ NOT LF@bool_result LF@bool_left
 WRITE LF@bool_result
 WRITE string@\010
 POPFRAME
+DEFVAR GF@i2c
+MOVE GF@i2c int@78
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+MOVE GF@i2c int@73
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+MOVE GF@i2c int@75
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+MOVE GF@i2c int@73
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+MOVE GF@i2c int@84
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+MOVE GF@i2c int@65
+INT2CHAR GF@i2c GF@i2c
+WRITE GF@i2c
+WRITE string@\010
+DEFVAR GF@s2i_string
+DEFVAR GF@s2i_result
+MOVE GF@s2i_string string@ELENA
+WRITE GF@s2i_string
+WRITE string@\010
+STRI2INT GF@s2i_result GF@s2i_string int@0
+WRITE string@E=
+WRITE GF@s2i_result
+WRITE string@\010
+STRI2INT GF@s2i_result GF@s2i_string int@1
+WRITE string@L=
+WRITE GF@s2i_result
+WRITE string@\010
+STRI2INT GF@s2i_result GF@s2i_string int@2
+WRITE string@E=
+WRITE GF@s2i_result
+WRITE string@\010
+STRI2INT GF@s2i_result GF@s2i_string int@3
+WRITE string@N=
+WRITE GF@s2i_result
+WRITE string@\010
+STRI2INT GF@s2i_result GF@s2i_string int@4
+WRITE string@A=
+WRITE GF@s2i_result
+WRITE string@\010
