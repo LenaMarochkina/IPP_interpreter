@@ -25,6 +25,18 @@ $MATH_MAP = [
     E_INSTRUCTION_NAME::MUL->value => fn(int $a, int $b) => $a * $b,
     E_INSTRUCTION_NAME::IDIV->value => fn(int $a, int $b) => intval($a / $b),
 ];
+global $RELATIONAL_MAP;
+
+/**
+ * Relational map
+ *
+ * @var array{E_INSTRUCTION_NAME: callable(mixed, mixed): bool} $RELATIONAL_MAP
+ */
+$RELATIONAL_MAP = [
+    E_INSTRUCTION_NAME::LT->value => fn(mixed $a, mixed $b) => $a < $b,
+    E_INSTRUCTION_NAME::GT->value => fn(mixed $a, mixed $b) => $a > $b,
+    E_INSTRUCTION_NAME::EQ->value => fn(mixed $a, mixed $b) => $a == $b,
+];
 
 class Interpreter extends AbstractInterpreter
 {
@@ -93,10 +105,10 @@ class Interpreter extends AbstractInterpreter
     private function getArgumentVariable(Argument $argument): Variable
     {
         if ($argument->getType() != E_ARGUMENT_TYPE::VAR) {
-            throw new SemanticException("Argument {$argument->getValue()} is not a variable type");
+            throw new SemanticException("Argument {$argument->getStringValue()} is not a variable type");
         }
 
-        [$variableFrame, $variableName] = Variable::parseVariableName($argument->getValue());
+        [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
 
         return $this->getVariableFrame($variableFrame)->getVariable($variableName);
     }
@@ -177,16 +189,12 @@ class Interpreter extends AbstractInterpreter
      * Output value to stdout
      *
      * @param E_ARGUMENT_TYPE $type Output value type
-     * @param string|null $value Output value
+     * @param string|int|bool $value Output value
      * @return void
      * @throws OperandTypeException If value type is not a variable type and cannot be written to output
      */
-    private function runOutput(E_ARGUMENT_TYPE $type, string|null $value): void
+    private function runOutput(E_ARGUMENT_TYPE $type, string|int|bool|null $value): void
     {
-        if (!$type->isLiteralType()) {
-            throw new OperandTypeException("Value with type $type->value cannot be written to output");
-        }
-
         switch ($type) {
             case E_ARGUMENT_TYPE::INT:
                 $this->stdout->writeInt((int)$value);
@@ -208,6 +216,7 @@ class Interpreter extends AbstractInterpreter
      * @param Instruction $instruction Instruction instance
      * @throws OperandTypeException If operands are not of type int
      * @throws SemanticException If result variable is not a variable type
+     * @throws OperandValueException If division by zero occurs
      */
     private function runMath(Instruction $instruction): void
     {
@@ -229,9 +238,37 @@ class Interpreter extends AbstractInterpreter
         $resultVariable->setType(E_ARGUMENT_TYPE::INT);
         try {
             $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
-        } catch (DivisionByZeroError $e) {
+        } catch (DivisionByZeroError) {
             throw new OperandValueException("Division by zero");
         }
+    }
+
+    /**
+     * Process LT, GT and EQ instructions
+     *
+     * @param Instruction $instruction Instruction instance
+     * @throws OperandTypeException If operands are not of the same type
+     * @throws SemanticException If result variable is not a variable type
+     */
+    private function runRelational(Instruction $instruction): void
+    {
+        global $RELATIONAL_MAP;
+        $resultVariableArgument = $instruction->getArgument(0);
+        $leftOperand = $instruction->getArgument(1);
+        $rightOperand = $instruction->getArgument(2);
+
+        if (!$this->isOperandSameType($leftOperand, $rightOperand)) {
+            throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of the same type");
+        }
+
+        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
+        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
+
+        $func = $RELATIONAL_MAP[$instruction->getName()->value];
+        $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+
+        $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
+        $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
     }
 
     public function execute(): int
@@ -333,17 +370,17 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::DEFVAR:
                 $argument = $instruction->getArgument(0);
 
-                [$variableFrame, $variableName] = Variable::parseVariableName($argument->getValue());
+                [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
 
                 $this->getVariableFrame($variableFrame)->createVariable($variableName, $argument->getType());
                 break;
             case E_INSTRUCTION_NAME::MOVE:
                 [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
-                [$argVariableFrame, $argVariableName] = Variable::parseVariableName($argumentVariable->getValue());
+                [$argVariableFrame, $argVariableName] = Variable::parseVariableName($argumentVariable->getStringValue());
 
                 $this->getVariableFrame($argVariableFrame)->getVariable($argVariableName)->setType($argumentValue->getType());
-                $this->getVariableFrame($argVariableFrame)->getVariable($argVariableName)->setValue($argumentValue->getValue());
+                $this->getVariableFrame($argVariableFrame)->getVariable($argVariableName)->setValue($argumentValue->getStringValue());
 
                 break;
             case E_INSTRUCTION_NAME::WRITE:
@@ -352,13 +389,13 @@ class Interpreter extends AbstractInterpreter
                     case E_ARGUMENT_TYPE::INT:
                     case E_ARGUMENT_TYPE::STRING:
                     case E_ARGUMENT_TYPE::BOOL:
-                        $this->runOutput($argument->getType(), $argument->getValue());
+                        $this->runOutput($argument->getType(), $argument->getStringValue());
 
                         break;
                     case E_ARGUMENT_TYPE::VAR:
                         $this->runOutput(
                             $this->getArgumentVariable($argument)->getType(),
-                            $this->getArgumentVariable($argument)->getValue(),
+                            $this->getArgumentVariable($argument)->getTypedValue(),
                         );
 
                         break;
@@ -372,6 +409,11 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::MUL:
             case E_INSTRUCTION_NAME::IDIV:
                 $this->runMath($instruction);
+                break;
+            case E_INSTRUCTION_NAME::LT:
+            case E_INSTRUCTION_NAME::GT:
+            case E_INSTRUCTION_NAME::EQ:
+                $this->runRelational($instruction);
                 break;
             default:
                 throw new SemanticException("Unknown instruction " . $instruction->getName()->value);

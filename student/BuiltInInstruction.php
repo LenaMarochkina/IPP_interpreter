@@ -147,7 +147,7 @@ class BuiltInInstruction
 
         foreach ($args as $index => $arg) {
             if (!in_array($arg->getType(), $this->args[$index])) {
-                throw new OperandTypeException("Wrong type of argument {$arg->getValue()} at {$index} position for instruction '{$this->name->value}'");
+                throw new OperandTypeException("Wrong type of argument {$arg->getStringValue()} at {$index} position for instruction '{$this->name->value}'");
             }
         }
     }

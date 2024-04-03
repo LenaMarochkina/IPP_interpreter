@@ -12,9 +12,9 @@ class Variable
     private string $name;
 
     /**
-     * @var string|null Variable value
+     * @var Value Variable value
      */
-    private string|null $value;
+    private Value $value;
 
     /**
      * @var E_ARGUMENT_TYPE Variable type
@@ -32,7 +32,7 @@ class Variable
     {
         $this->name = $name;
         $this->type = $type;
-        $this->value = $value;
+        $this->value = new Value($value);
     }
 
     /**
@@ -71,31 +71,38 @@ class Variable
 
     public function setValue(string $value): void
     {
-        $this->value = $value;
+        $this->value = new Value($value);
     }
 
     /**
      * Get variable value
      *
-     * @return string|null Variable value
+     * @return Value Variable value
      */
-    public function getValue(): string|null
+    public function getValue(): Value
     {
         return $this->value;
+    }
+
+    /**
+     * Get variable value
+     *
+     * @return string Variable value
+     */
+    public function getStringValue(): string
+    {
+        return $this->value->getValue();
     }
 
     /**
      * Return variable value based on type
      *
      * @return string|int|bool|null Typed value
+     * @throws SemanticException If type is not a string, int or bool
      */
     public function getTypedValue(): string|int|bool|null
     {
-        return match ($this->type) {
-            E_ARGUMENT_TYPE::INT => intval($this->value),
-            E_ARGUMENT_TYPE::BOOL => $this->value == 'true',
-            default => $this->value
-        };
+        return $this->value->getTypedValue($this->type);
     }
 
     /**
