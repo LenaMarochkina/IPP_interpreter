@@ -12,6 +12,7 @@ use DOMElement;
 use DOMAttr;
 use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\StringOperationException;
 
 global $MATH_MAP;
 /**
@@ -499,6 +500,110 @@ class Interpreter extends AbstractInterpreter
 
                 $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
                 $this->getArgumentVariable($argumentVariable)->setValue(strval($charCode));
+
+                break;
+            case E_INSTRUCTION_NAME::CONCAT:
+                [
+                    $argumentVariable,
+                    $argumentLeftString,
+                    $argumentRightString
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                    $instruction->getArgument(2),
+                ];
+
+                if (!$this->isOperandTypeOf($argumentLeftString, E_ARGUMENT_TYPE::STRING) || !$this->isOperandTypeOf($argumentRightString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new StringOperationException("CONCAT instruction operands must be of type string");
+                }
+
+                $argumentLeftStringValue = $this->getOperandTypedValue($argumentLeftString);
+                $argumentRightStringValue = $this->getOperandTypedValue($argumentRightString);
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+                $this->getArgumentVariable($argumentVariable)->setValue($argumentLeftStringValue . $argumentRightStringValue);
+
+                break;
+            case E_INSTRUCTION_NAME::STRLEN:
+                [
+                    $argumentVariable,
+                    $argumentString,
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                ];
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new StringOperationException("STRLEN instruction operand must be of type string");
+                }
+
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
+                $this->getArgumentVariable($argumentVariable)->setValue(strval(mb_strlen($argumentStringValue)));
+
+                break;
+            case E_INSTRUCTION_NAME::GETCHAR:
+                [
+                    $argumentVariable,
+                    $argumentString,
+                    $argumentIndex
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                    $instruction->getArgument(2),
+                ];
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new StringOperationException("GETCHAR instruction first operand must be of type string");
+                }
+
+                if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
+                    throw new StringOperationException("GETCHAR instruction second operand must be of type int");
+                }
+
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
+
+                if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
+                    throw new StringOperationException("GETCHAR instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
+                }
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+                $this->getArgumentVariable($argumentVariable)->setValue($argumentStringValue[$argumentIndexValue]);
+
+                break;
+            case E_INSTRUCTION_NAME::SETCHAR:
+                [
+                    $argumentVariable,
+                    $argumentIndex,
+                    $argumentString
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                    $instruction->getArgument(2),
+                ];
+
+                if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
+                    throw new StringOperationException("SETCHAR instruction first operand must be of type int");
+                }
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new StringOperationException("SETCHAR instruction second operand must be of type string");
+                }
+
+                $argumentVariableValue = $this->getOperandTypedValue($argumentVariable);
+                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+
+                if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentVariableValue)) {
+                    throw new StringOperationException("SETCHAR instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentVariableValue));
+                }
+
+                $argumentVariableValue[$argumentIndexValue] = $argumentStringValue[0];
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+                $this->getArgumentVariable($argumentVariable)->setValue($argumentVariableValue);
 
                 break;
             default:

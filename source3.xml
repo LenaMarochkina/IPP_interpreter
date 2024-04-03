@@ -291,4 +291,105 @@
   <instruction order="85" opcode="WRITE">
     <arg1 type="string">\010</arg1>
   </instruction>
+  <instruction order="86" opcode="DEFVAR">
+    <arg1 type="var">GF@concat_result</arg1>
+  </instruction>
+  <instruction order="87" opcode="DEFVAR">
+    <arg1 type="var">GF@concat_left</arg1>
+  </instruction>
+  <instruction order="88" opcode="DEFVAR">
+    <arg1 type="var">GF@concat_right</arg1>
+  </instruction>
+  <instruction order="89" opcode="MOVE">
+    <arg1 type="var">GF@concat_left</arg1>
+    <arg2 type="string">ahoj</arg2>
+  </instruction>
+  <instruction order="90" opcode="MOVE">
+    <arg1 type="var">GF@concat_right</arg1>
+    <arg2 type="string">eleno</arg2>
+  </instruction>
+  <instruction order="91" opcode="CONCAT">
+    <arg1 type="var">GF@concat_result</arg1>
+    <arg2 type="var">GF@concat_left</arg2>
+    <arg3 type="string">\032</arg3>
+  </instruction>
+  <instruction order="92" opcode="CONCAT">
+    <arg1 type="var">GF@concat_result</arg1>
+    <arg2 type="var">GF@concat_result</arg2>
+    <arg3 type="var">GF@concat_right</arg3>
+  </instruction>
+  <instruction order="93" opcode="WRITE">
+    <arg1 type="var">GF@concat_result</arg1>
+  </instruction>
+  <instruction order="94" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="95" opcode="DEFVAR">
+    <arg1 type="var">GF@strlen_result</arg1>
+  </instruction>
+  <instruction order="96" opcode="DEFVAR">
+    <arg1 type="var">GF@strlen_string</arg1>
+  </instruction>
+  <instruction order="97" opcode="MOVE">
+    <arg1 type="var">GF@strlen_string</arg1>
+    <arg2 type="string">ahoj\032eleno</arg2>
+  </instruction>
+  <instruction order="98" opcode="STRLEN">
+    <arg1 type="var">GF@strlen_result</arg1>
+    <arg2 type="var">GF@strlen_string</arg2>
+  </instruction>
+  <instruction order="99" opcode="WRITE">
+    <arg1 type="string">Length\032of\032string\032is\032</arg1>
+  </instruction>
+  <instruction order="100" opcode="WRITE">
+    <arg1 type="var">GF@strlen_result</arg1>
+  </instruction>
+  <instruction order="101" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="102" opcode="DEFVAR">
+    <arg1 type="var">GF@getchar_result</arg1>
+  </instruction>
+  <instruction order="103" opcode="DEFVAR">
+    <arg1 type="var">GF@getchar_string</arg1>
+  </instruction>
+  <instruction order="104" opcode="MOVE">
+    <arg1 type="var">GF@getchar_string</arg1>
+    <arg2 type="string">ahoj\032eleno</arg2>
+  </instruction>
+  <instruction order="105" opcode="GETCHAR">
+    <arg1 type="var">GF@getchar_result</arg1>
+    <arg2 type="var">GF@getchar_string</arg2>
+    <arg3 type="int">0</arg3>
+  </instruction>
+  <instruction order="106" opcode="WRITE">
+    <arg1 type="string">Character\032at\032index\0320\032is\032</arg1>
+  </instruction>
+  <instruction order="107" opcode="WRITE">
+    <arg1 type="var">GF@getchar_result</arg1>
+  </instruction>
+  <instruction order="108" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="109" opcode="DEFVAR">
+    <arg1 type="var">GF@setchar_result</arg1>
+  </instruction>
+  <instruction order="110" opcode="DEFVAR">
+    <arg1 type="var">GF@setchar_string</arg1>
+  </instruction>
+  <instruction order="111" opcode="MOVE">
+    <arg1 type="var">GF@setchar_string</arg1>
+    <arg2 type="string">ahoj\032eleno</arg2>
+  </instruction>
+  <instruction order="112" opcode="SETCHAR">
+    <arg1 type="var">GF@setchar_string</arg1>
+    <arg2 type="int">0</arg2>
+    <arg3 type="string">A</arg3>
+  </instruction>
+  <instruction order="113" opcode="WRITE">
+    <arg1 type="var">GF@setchar_string</arg1>
+  </instruction>
+  <instruction order="114" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
 </program>

@@ -84,3 +84,32 @@ STRI2INT GF@s2i_result GF@s2i_string int@4
 WRITE string@A=
 WRITE GF@s2i_result
 WRITE string@\010
+DEFVAR GF@concat_result
+DEFVAR GF@concat_left
+DEFVAR GF@concat_right
+MOVE GF@concat_left string@ahoj
+MOVE GF@concat_right string@eleno
+CONCAT GF@concat_result GF@concat_left string@\032
+CONCAT GF@concat_result GF@concat_result GF@concat_right
+WRITE GF@concat_result
+WRITE string@\010
+DEFVAR GF@strlen_result
+DEFVAR GF@strlen_string
+MOVE GF@strlen_string string@ahoj\032eleno
+STRLEN GF@strlen_result GF@strlen_string
+WRITE string@Length\032of\032string\032is\032
+WRITE GF@strlen_result
+WRITE string@\010
+DEFVAR GF@getchar_result
+DEFVAR GF@getchar_string
+MOVE GF@getchar_string string@ahoj\032eleno
+GETCHAR GF@getchar_result GF@getchar_string int@0
+WRITE string@Character\032at\032index\0320\032is\032
+WRITE GF@getchar_result
+WRITE string@\010
+DEFVAR GF@setchar_result
+DEFVAR GF@setchar_string
+MOVE GF@setchar_string string@ahoj\032eleno
+SETCHAR GF@setchar_string int@0 string@A
+WRITE GF@setchar_string
+WRITE string@\010
