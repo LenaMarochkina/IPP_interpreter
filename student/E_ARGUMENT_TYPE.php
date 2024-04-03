@@ -12,10 +12,11 @@ enum E_ARGUMENT_TYPE: string
     case STRING = 'string';
     case BOOL = 'bool';
     case TYPE = 'type';
+    case NIL = 'nil';
 
     public function isLiteralType(): bool
     {
-        return in_array($this, [self::INT, self::STRING, self::BOOL]);
+        return in_array($this, [self::INT, self::STRING, self::BOOL, self::NIL]);
     }
 
     public static function containsValue(string $value): bool

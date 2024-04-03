@@ -87,6 +87,12 @@ class Variable
         $this->defined = true;
     }
 
+    public function setTypedValue(string|int|bool|null $value): void
+    {
+        $this->value = new Value((string)$value);
+        $this->defined = true;
+    }
+
     /**
      * Get variable value
      *

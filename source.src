@@ -113,3 +113,7 @@ MOVE GF@setchar_string string@ahoj\032eleno
 SETCHAR GF@setchar_string int@0 string@A
 WRITE GF@setchar_string
 WRITE string@\010
+DEFVAR GF@type_result
+TYPE GF@type_result GF@setchar_string
+WRITE GF@type_result
+WRITE string@\010

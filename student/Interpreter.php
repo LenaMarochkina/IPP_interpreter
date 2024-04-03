@@ -65,6 +65,23 @@ class Interpreter extends AbstractInterpreter
      */
     private GenericStack $localFrameStack;
 
+    /**
+     * @var array{string: int} $labels Labels
+     */
+    private array $labels = [];
+
+    /**
+     * @var GenericStack<int> $callStack Call stack
+     */
+    private GenericStack $callStack;
+
+    /**
+     * @var GenericStack<int|string|bool|null> $dataStack Data stack
+     */
+    private GenericStack $dataStack;
+
+    private int $instructionCounter = 0;
+
     protected function init(): void
     {
         parent::init();
@@ -72,6 +89,9 @@ class Interpreter extends AbstractInterpreter
         $this->globalFrame = new Frame(E_VARIABLE_FRAME::GF);
         $this->localFrameStack = new GenericStack();
         $this->temporaryFrame = null;
+
+        $this->callStack = new GenericStack();
+        $this->dataStack = new GenericStack();
     }
 
     /**
@@ -132,25 +152,21 @@ class Interpreter extends AbstractInterpreter
     }
 
     /**
-     * Instruction operands validation
-     * * Check if variable operands are not null
+     * Check if operand is defined
      *
-     * @param Instruction $instruction Instruction instance
-     * @throws FrameAccessException If variable frame is not valid
+     * @param Argument $argument Argument instance
+     * @return bool True if variable is defined, false otherwise
      * @throws SemanticException If variable definition is invalid
-     * @throws ValueException If variable operands do not have value
+     * @throws FrameAccessException If variable frame is not valid
+     * @throws VariableAccessException If variable does not exist
      */
-    private function validateOperands(Instruction $instruction): void
+    private function isOperandDefined(Argument $argument): bool
     {
-        foreach ($instruction->getArguments() as $argument) {
-            if ($argument->getType() == E_ARGUMENT_TYPE::VAR) {
-                [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
-
-                if (!$this->getVariableFrame($variableFrame)->containsVariable($variableName)) {
-                    throw new ValueException("Variable $variableName does not exist in frame $variableFrame->value");
-                }
-            }
+        if ($argument->getType() === E_ARGUMENT_TYPE::VAR) {
+            return $this->getArgumentVariable($argument)->isDefined();
         }
+
+        return true;
     }
 
     /**
@@ -195,7 +211,7 @@ class Interpreter extends AbstractInterpreter
         }
 
         if ($argument->getType() == E_ARGUMENT_TYPE::VAR) {
-            if (!$this->getArgumentVariable($argument)->isDefined()) {
+            if (!$this->isOperandDefined($argument)) {
                 throw new ValueException("Variable {$argument->getStringValue()} is not defined");
             }
 
@@ -253,6 +269,8 @@ class Interpreter extends AbstractInterpreter
             case E_ARGUMENT_TYPE::BOOL:
                 $this->stdout->writeBool($value == "true");
                 break;
+            case E_ARGUMENT_TYPE::NIL:
+                break;
             default:
                 throw new OperandTypeException("Invalid argument type $type->value for WRITE instruction");
         }
@@ -307,12 +325,12 @@ class Interpreter extends AbstractInterpreter
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
 
+        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
+        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
+
         if (!$this->isOperandSameType($leftOperand, $rightOperand)) {
             throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of the same type");
         }
-
-        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
-        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
         $func = $RELATIONAL_MAP[$instruction->getName()->value];
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
@@ -328,6 +346,9 @@ class Interpreter extends AbstractInterpreter
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
 
+        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
+        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
+
         if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
             if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::BOOL)) {
                 throw new OperandTypeException("NOT instruction operand must be of type bool");
@@ -337,9 +358,6 @@ class Interpreter extends AbstractInterpreter
                 throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of type bool");
             }
         }
-
-        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
-        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
         $func = $BOOL_MAP[$instruction->getName()->value];
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
@@ -352,6 +370,7 @@ class Interpreter extends AbstractInterpreter
     {
         $dom = $this->source->getDOMDocument();
 
+        /** @var Instruction[] $parsedInstructions */
         $parsedInstructions = [];
 
         /** @var DOMElement $programElement */
@@ -416,6 +435,21 @@ class Interpreter extends AbstractInterpreter
         }
 
         foreach ($parsedInstructions as $instruction) {
+            if ($instruction->getName() === E_INSTRUCTION_NAME::LABEL) {
+                $labelArgument = $instruction->getArgument(0);
+
+                $labelValue = $labelArgument->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+                if (array_key_exists($labelValue, $this->labels)) {
+                    throw new SemanticException("Duplicate label $labelValue");
+                }
+
+                $this->labels[$labelValue] = $instruction->getOrder();
+            }
+        }
+
+        for (; $this->instructionCounter < count($parsedInstructions); $this->instructionCounter++) {
+            $instruction = $parsedInstructions[$this->instructionCounter];
             $this->executeInstruction($instruction);
         }
 
@@ -443,6 +477,10 @@ class Interpreter extends AbstractInterpreter
                 $this->temporaryFrame = null;
                 break;
             case E_INSTRUCTION_NAME::POPFRAME:
+                if ($this->localFrameStack->isEmpty()) {
+                    throw new FrameAccessException("Local frame does not exist");
+                }
+
                 $this->temporaryFrame = $this->localFrameStack->pop();
                 break;
             case E_INSTRUCTION_NAME::DEFVAR:
@@ -455,9 +493,81 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::MOVE:
                 [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
+                $argumentValueType = $this->getOperandFinalType($argumentValue);
+                $argumentValueValue = Value::getTypedValueString($argumentValueType, $this->getOperandTypedValue($argumentValue));
+
                 $this->getArgumentVariable($argumentVariable)->setDefined(true);
-                $this->getArgumentVariable($argumentVariable)->setType($argumentValue->getType());
-                $this->getArgumentVariable($argumentVariable)->setValue($argumentValue->getStringValue());
+                $this->getArgumentVariable($argumentVariable)->setType($argumentValueType);
+                $this->getArgumentVariable($argumentVariable)->setValue($argumentValueValue);
+
+                break;
+            case E_INSTRUCTION_NAME::CALL:
+                [
+                    $argumentLabel,
+                ] = [
+                    $instruction->getArgument(0),
+                ];
+
+                $labelValue = $argumentLabel->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+                if (!array_key_exists($labelValue, $this->labels))
+                    throw new SemanticException("Unknown label $labelValue");
+
+                $this->callStack->push($this->instructionCounter);
+
+                $this->instructionCounter = $this->labels[$labelValue] - 1;
+
+                break;
+            case E_INSTRUCTION_NAME::RETURN:
+                if ($this->callStack->isEmpty()) {
+                    throw new ValueException("Call stack is empty");
+                }
+
+                $this->instructionCounter = $this->callStack->pop();
+
+                break;
+            case E_INSTRUCTION_NAME::PUSHS:
+                $argument = $instruction->getArgument(0);
+
+                $argumentValue = $this->getOperandTypedValue($argument);
+
+                $this->dataStack->push($argumentValue);
+
+                break;
+            case E_INSTRUCTION_NAME::POPS:
+                $argument = $instruction->getArgument(0);
+
+                if ($this->dataStack->isEmpty()) {
+                    throw new ValueException("Data stack is empty");
+                }
+
+                $value = $this->dataStack->pop();
+                $detectedType = Value::determineValueType($value);
+
+                $this->getArgumentVariable($argument)->setDefined(true);
+                $this->getArgumentVariable($argument)->setType($detectedType);
+                $this->getArgumentVariable($argument)->setValue(Value::getTypedValueString($detectedType, $value));
+
+                break;
+            case E_INSTRUCTION_NAME::READ:
+                [
+                    $argumentVariable,
+                    $argumentType,
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                ];
+
+                $input = match ($argumentType->getValue()->getValue()) {
+                    "int" => $this->input->readInt(),
+                    "string" => $this->input->readString(),
+                    "bool" => $this->input->readBool(),
+                    default => throw new OperandTypeException("Invalid argument type for READ instruction"),
+                };
+                $detectedType = Value::determineValueType($input);
+
+                $this->getArgumentVariable($argumentVariable)->setType($input !== null ? $detectedType : E_ARGUMENT_TYPE::NIL);
+                $this->getArgumentVariable($argumentVariable)->setValue($input !== null ? Value::getTypedValueString($detectedType, $input) : "");
 
                 break;
             case E_INSTRUCTION_NAME::WRITE:
@@ -466,10 +576,15 @@ class Interpreter extends AbstractInterpreter
                     case E_ARGUMENT_TYPE::INT:
                     case E_ARGUMENT_TYPE::STRING:
                     case E_ARGUMENT_TYPE::BOOL:
+                    case E_ARGUMENT_TYPE::NIL:
                         $this->runOutput($argument->getType(), $argument->getTypedValue());
 
                         break;
                     case E_ARGUMENT_TYPE::VAR:
+                        if (!$this->isOperandDefined($argument)) {
+                            throw new ValueException("Variable {$argument->getStringValue()} is not defined");
+                        }
+
                         $this->runOutput(
                             $this->getArgumentVariable($argument)->getType(),
                             $this->getArgumentVariable($argument)->getTypedValue(),
@@ -498,14 +613,22 @@ class Interpreter extends AbstractInterpreter
                 $this->runBool($instruction);
                 break;
             case E_INSTRUCTION_NAME::INT2CHAR:
-                [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
+                [$argumentVariable, $argumentNumber] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
-                if (!$this->isOperandTypeOf($argumentValue, E_ARGUMENT_TYPE::INT)) {
+                $argumentNumberValue = $this->getOperandTypedValue($argumentNumber);
+
+                if (!$this->isOperandTypeOf($argumentNumber, E_ARGUMENT_TYPE::INT)) {
                     throw new OperandTypeException("INT2CHAR instruction operand must be of type int");
                 }
 
+                $value = mb_chr($argumentNumberValue);
+
+                if (!$value) {
+                    throw new StringOperationException("INT2CHAR instruction value out of bounds: $argumentNumberValue");
+                }
+
                 $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
-                $this->getArgumentVariable($argumentVariable)->setValue(mb_chr($this->getOperandTypedValue($argumentValue)));
+                $this->getArgumentVariable($argumentVariable)->setValue($value);
 
                 break;
             case E_INSTRUCTION_NAME::STRI2INT:
@@ -519,6 +642,9 @@ class Interpreter extends AbstractInterpreter
                     $instruction->getArgument(2),
                 ];
 
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
+
                 if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
                     throw new OperandTypeException("STRI2INT instruction first operand must be of type string");
                 }
@@ -527,11 +653,8 @@ class Interpreter extends AbstractInterpreter
                     throw new OperandTypeException("STRI2INT instruction second operand must be of type int");
                 }
 
-                $argumentStringValue = $this->getOperandTypedValue($argumentString);
-                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
-
                 if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
-                    throw new OperandValueException("STRI2INT instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
+                    throw new StringOperationException("STRI2INT instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
                 }
 
                 $charCode = mb_ord($argumentStringValue[$argumentIndexValue]);
@@ -551,12 +674,12 @@ class Interpreter extends AbstractInterpreter
                     $instruction->getArgument(2),
                 ];
 
-                if (!$this->isOperandTypeOf($argumentLeftString, E_ARGUMENT_TYPE::STRING) || !$this->isOperandTypeOf($argumentRightString, E_ARGUMENT_TYPE::STRING)) {
-                    throw new StringOperationException("CONCAT instruction operands must be of type string");
-                }
-
                 $argumentLeftStringValue = $this->getOperandTypedValue($argumentLeftString);
                 $argumentRightStringValue = $this->getOperandTypedValue($argumentRightString);
+
+                if (!$this->isOperandTypeOf($argumentLeftString, E_ARGUMENT_TYPE::STRING) || !$this->isOperandTypeOf($argumentRightString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new OperandTypeException("CONCAT instruction operands must be of type string");
+                }
 
                 $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
                 $this->getArgumentVariable($argumentVariable)->setValue($argumentLeftStringValue . $argumentRightStringValue);
@@ -571,11 +694,11 @@ class Interpreter extends AbstractInterpreter
                     $instruction->getArgument(1),
                 ];
 
-                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
-                    throw new StringOperationException("STRLEN instruction operand must be of type string");
-                }
-
                 $argumentStringValue = $this->getOperandTypedValue($argumentString);
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new OperandTypeException("STRLEN instruction operand must be of type string");
+                }
 
                 $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
                 $this->getArgumentVariable($argumentVariable)->setValue(strval(mb_strlen($argumentStringValue)));
@@ -592,16 +715,16 @@ class Interpreter extends AbstractInterpreter
                     $instruction->getArgument(2),
                 ];
 
+                $argumentStringValue = $this->getOperandTypedValue($argumentString);
+                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
+
                 if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
-                    throw new StringOperationException("GETCHAR instruction first operand must be of type string");
+                    throw new OperandTypeException("GETCHAR instruction second operand must be of type string");
                 }
 
                 if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
-                    throw new StringOperationException("GETCHAR instruction second operand must be of type int");
+                    throw new OperandTypeException("GETCHAR instruction third operand must be of type int");
                 }
-
-                $argumentStringValue = $this->getOperandTypedValue($argumentString);
-                $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
 
                 if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
                     throw new StringOperationException("GETCHAR instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
@@ -622,20 +745,28 @@ class Interpreter extends AbstractInterpreter
                     $instruction->getArgument(2),
                 ];
 
-                if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
-                    throw new StringOperationException("SETCHAR instruction first operand must be of type int");
-                }
-
-                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
-                    throw new StringOperationException("SETCHAR instruction second operand must be of type string");
-                }
-
                 $argumentVariableValue = $this->getOperandTypedValue($argumentVariable);
                 $argumentIndexValue = $this->getOperandTypedValue($argumentIndex);
                 $argumentStringValue = $this->getOperandTypedValue($argumentString);
 
+                if (!$this->isOperandTypeOf($argumentVariable, E_ARGUMENT_TYPE::STRING)) {
+                    throw new OperandTypeException("SETCHAR instruction first operand must be of type string");
+                }
+
+                if (!$this->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
+                    throw new OperandTypeException("SETCHAR instruction second operand must be of type int");
+                }
+
+                if (!$this->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
+                    throw new OperandTypeException("SETCHAR instruction third operand must be of type string");
+                }
+
                 if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentVariableValue)) {
                     throw new StringOperationException("SETCHAR instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentVariableValue));
+                }
+
+                if (mb_strlen($argumentStringValue) < 1) {
+                    throw new StringOperationException("SETCHAR instruction value length must be greater than 0");
                 }
 
                 $argumentVariableValue[$argumentIndexValue] = $argumentStringValue[0];
@@ -644,6 +775,90 @@ class Interpreter extends AbstractInterpreter
                 $this->getArgumentVariable($argumentVariable)->setValue($argumentVariableValue);
 
                 break;
+            case E_INSTRUCTION_NAME::TYPE:
+                [
+                    $argumentVariable,
+                    $argumentSymbol,
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                ];
+
+                $symbolType = $this->isOperandDefined($argumentSymbol) ? $this->getOperandFinalType($argumentSymbol)->value : "";
+
+                $this->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+                $this->getArgumentVariable($argumentVariable)->setValue($symbolType);
+                break;
+            case E_INSTRUCTION_NAME::LABEL:
+                // Ignored because labels are processed before the instructions
+                break;
+            case E_INSTRUCTION_NAME::JUMP:
+                [
+                    $argumentLabel,
+                ] = [
+                    $instruction->getArgument(0),
+                ];
+
+                $labelValue = $argumentLabel->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+                if (!array_key_exists($labelValue, $this->labels))
+                    throw new SemanticException("Unknown label $labelValue");
+
+                $this->instructionCounter = $this->labels[$labelValue] - 1;
+
+                break;
+            case E_INSTRUCTION_NAME::JUMPIFNEQ:
+            case E_INSTRUCTION_NAME::JUMPIFEQ:
+                [
+                    $argumentLabel,
+                    $argumentLeftSymbol,
+                    $argumentRightSymbol,
+                ] = [
+                    $instruction->getArgument(0),
+                    $instruction->getArgument(1),
+                    $instruction->getArgument(2),
+                ];
+
+                $labelValue = $argumentLabel->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+                if (!array_key_exists($labelValue, $this->labels))
+                    throw new SemanticException("Unknown label $labelValue");
+
+                $leftSymbolValue = $this->getOperandTypedValue($argumentLeftSymbol);
+                $rightSymbolValue = $this->getOperandTypedValue($argumentRightSymbol);
+                $leftSymbolType = $this->getOperandFinalType($argumentLeftSymbol);
+                $rightSymbolType = $this->getOperandFinalType($argumentRightSymbol);
+
+                if (!($this->isOperandSameType($argumentLeftSymbol, $argumentRightSymbol) || $leftSymbolType === E_ARGUMENT_TYPE::NIL || $rightSymbolType === E_ARGUMENT_TYPE::NIL)) {
+                    throw new OperandTypeException("JUMPIFEQ instruction operands must be of the same type or one of them must be nil");
+                }
+
+                $isValueValid = $instruction->getName() === E_INSTRUCTION_NAME::JUMPIFEQ
+                    ? $leftSymbolValue === $rightSymbolValue
+                    : $leftSymbolValue !== $rightSymbolValue;
+
+                if ($isValueValid)
+                    $this->instructionCounter = $this->labels[$labelValue] - 1;
+
+                break;
+            case E_INSTRUCTION_NAME::EXIT:
+                [
+                    $argumentSymbol,
+                ] = [
+                    $instruction->getArgument(0),
+                ];
+
+                $argumentSymbolValue = $this->getOperandTypedValue($argumentSymbol);
+
+                if (!$this->isOperandTypeOf($argumentSymbol, E_ARGUMENT_TYPE::INT)) {
+                    throw new OperandTypeException("EXIT instruction operand must be of type int");
+                }
+
+                if ($argumentSymbolValue < 0 || $argumentSymbolValue > 9) {
+                    throw new OperandValueException("EXIT instruction operand must be in range 0-9");
+                }
+
+                exit($argumentSymbolValue);
             default:
                 throw new SemanticException("Unknown instruction " . $instruction->getName()->value);
         }

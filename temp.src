@@ -1,6 +1,33 @@
 .IPPcode24
 
 DEFVAR GF@a
-DEFVAR GF@b
 
-ADD GF@a int@42 GF@b
+# true
+READ GF@a bool
+WRITE GF@a
+TYPE GF@a GF@a
+WRITE GF@a
+
+# false
+READ GF@a bool
+WRITE GF@a
+TYPE GF@a GF@a
+WRITE GF@a
+
+# TRue
+READ GF@a bool
+WRITE GF@a
+TYPE GF@a GF@a
+WRITE GF@a
+
+# falSE
+READ GF@a bool
+WRITE GF@a
+TYPE GF@a GF@a
+WRITE GF@a
+
+# abcde
+READ GF@a bool
+WRITE GF@a
+TYPE GF@a GF@a
+WRITE GF@a

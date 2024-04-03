@@ -97,8 +97,10 @@ def check_single_opcode(line):
     # Count the number of opcodes in the line
     num_opcodes = sum(1 for token in tokens if token.upper() in CODE_COMMANDS)
 
+    flow_control_opcodes = ['LABEL', 'JUMP', 'JUMPIFEQ', 'JUMPIFNEQ', 'CALL']
+
     # If more than one opcode is found, raise an error
-    if num_opcodes > 1:
+    if num_opcodes > 1 and tokens[0].upper() not in flow_control_opcodes:
         print("Error: More than one opcode found in the line:", line)
         sys.exit(ERROR_OTHER_SYNTAX)
 

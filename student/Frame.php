@@ -32,6 +32,10 @@ class Frame
      */
     public function createVariable(string $name, E_ARGUMENT_TYPE $type, string|null $value = null): Variable
     {
+        if ($this->containsVariable($name)) {
+            throw new SemanticException("Variable $name already exists in frame {$this->frame->value}");
+        }
+
         $variable = new Variable($name, $type, $value);
         $this->variables[$name] = $variable;
         return $variable;
