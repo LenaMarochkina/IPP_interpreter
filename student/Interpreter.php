@@ -6,6 +6,7 @@ use DivisionByZeroError;
 use Exception;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
+use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
 
 use DOMElement;
@@ -13,6 +14,8 @@ use DOMAttr;
 use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\StringOperationException;
+use IPP\Student\Exception\ValueException;
+use IPP\Student\Exception\VariableAccessException;
 
 global $MATH_MAP;
 /**
@@ -77,16 +80,16 @@ class Interpreter extends AbstractInterpreter
      * 2. Temporary frame must exist
      *
      * @param E_VARIABLE_FRAME $frame Frame type
-     * @throws OperandTypeException If frame is not valid
+     * @throws FrameAccessException If frame is not valid
      */
     private function validateVariableFrame(E_VARIABLE_FRAME $frame): void
     {
         if ($this->localFrameStack->isEmpty() && $frame == E_VARIABLE_FRAME::LF) {
-            throw new OperandTypeException("Local frame does not exist");
+            throw new FrameAccessException("Local frame does not exist");
         }
 
         if ($this->temporaryFrame === null && $frame == E_VARIABLE_FRAME::TF) {
-            throw new OperandTypeException("Temporary frame does not exist");
+            throw new FrameAccessException("Temporary frame does not exist");
         }
     }
 
@@ -95,7 +98,7 @@ class Interpreter extends AbstractInterpreter
      *
      * @param E_VARIABLE_FRAME $frame Frame type
      * @return Frame Frame instance
-     * @throws OperandTypeException If frame is not valid
+     * @throws FrameAccessException If frame is not valid
      */
     private function getVariableFrame(E_VARIABLE_FRAME $frame): Frame
     {
@@ -114,7 +117,8 @@ class Interpreter extends AbstractInterpreter
      * @param Argument $argument Argument instance
      * @return Variable Variable instance
      * @throws SemanticException If argument is not a variable type or variable does not exist
-     * @throws OperandTypeException If variable frame is not valid
+     * @throws FrameAccessException If variable frame is not valid
+     * @throws VariableAccessException If variable frame is not valid
      */
     private function getArgumentVariable(Argument $argument): Variable
     {
@@ -125,6 +129,28 @@ class Interpreter extends AbstractInterpreter
         [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
 
         return $this->getVariableFrame($variableFrame)->getVariable($variableName);
+    }
+
+    /**
+     * Instruction operands validation
+     * * Check if variable operands are not null
+     *
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If variable frame is not valid
+     * @throws SemanticException If variable definition is invalid
+     * @throws ValueException If variable operands do not have value
+     */
+    private function validateOperands(Instruction $instruction): void
+    {
+        foreach ($instruction->getArguments() as $argument) {
+            if ($argument->getType() == E_ARGUMENT_TYPE::VAR) {
+                [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
+
+                if (!$this->getVariableFrame($variableFrame)->containsVariable($variableName)) {
+                    throw new ValueException("Variable $variableName does not exist in frame $variableFrame->value");
+                }
+            }
+        }
     }
 
     /**
@@ -150,9 +176,13 @@ class Interpreter extends AbstractInterpreter
      * Get operand typed value
      *
      * @param Argument|null $argument Argument instance
+     * @param bool $allowNull Allow null value
      * @return string|int|bool|null Typed value
+     * @throws FrameAccessException
      * @throws OperandTypeException If argument type is invalid
      * @throws SemanticException If argument is not a variable type
+     * @throws VariableAccessException
+     * @throws ValueException
      */
     private function getOperandTypedValue(Argument|null $argument): string|int|bool|null
     {
@@ -165,6 +195,10 @@ class Interpreter extends AbstractInterpreter
         }
 
         if ($argument->getType() == E_ARGUMENT_TYPE::VAR) {
+            if (!$this->getArgumentVariable($argument)->isDefined()) {
+                throw new ValueException("Variable {$argument->getStringValue()} is not defined");
+            }
+
             return $this->getArgumentVariable($argument)->getTypedValue();
         }
 
@@ -231,6 +265,8 @@ class Interpreter extends AbstractInterpreter
      * @throws OperandTypeException If operands are not of type int
      * @throws SemanticException If result variable is not a variable type
      * @throws OperandValueException If division by zero occurs
+     * @throws ValueException If variable operands do not have value
+     * @throws FrameAccessException If variable frame is not valid
      */
     private function runMath(Instruction $instruction): void
     {
@@ -239,12 +275,12 @@ class Interpreter extends AbstractInterpreter
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
 
+        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
+        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
+
         if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::INT) || !$this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::INT)) {
             throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of type int");
         }
-
-        $leftTypedValue = $this->getOperandTypedValue($leftOperand);
-        $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
         $func = $MATH_MAP[$instruction->getName()->value];
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
@@ -389,6 +425,7 @@ class Interpreter extends AbstractInterpreter
     /**
      * @throws OperandTypeException
      * @throws SemanticException
+     * @throws FrameAccessException
      * @throws Exception
      */
     private function executeInstruction(Instruction $instruction): void
@@ -399,7 +436,7 @@ class Interpreter extends AbstractInterpreter
                 break;
             case E_INSTRUCTION_NAME::PUSHFRAME:
                 if ($this->temporaryFrame === null) {
-                    throw new SemanticException("Temporary frame does not exist");
+                    throw new FrameAccessException("Temporary frame does not exist");
                 }
 
                 $this->localFrameStack->push($this->temporaryFrame);
@@ -418,6 +455,7 @@ class Interpreter extends AbstractInterpreter
             case E_INSTRUCTION_NAME::MOVE:
                 [$argumentVariable, $argumentValue] = [$instruction->getArgument(0), $instruction->getArgument(1)];
 
+                $this->getArgumentVariable($argumentVariable)->setDefined(true);
                 $this->getArgumentVariable($argumentVariable)->setType($argumentValue->getType());
                 $this->getArgumentVariable($argumentVariable)->setValue($argumentValue->getStringValue());
 

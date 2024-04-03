@@ -309,19 +309,19 @@ def generate_xml(instructions):
         instruction_element.set("opcode", opcode)
 
         # Process argument 1
-        if arg1:
+        if arg1 is not None:
             arg1_element = ET.SubElement(instruction_element, "arg1")
             arg1_element.set("type", arg1_type)
             arg1_element.text = arg1
 
         # Process argument 2
-        if arg2:
+        if arg2 is not None:
             arg2_element = ET.SubElement(instruction_element, "arg2")
             arg2_element.set("type", arg2_type)
             arg2_element.text = arg2
 
         # Process argument 3
-        if arg3:
+        if arg3 is not None:
             arg3_element = ET.SubElement(instruction_element, "arg3")
             arg3_element.set("type", arg3_type)
             arg3_element.text = arg3

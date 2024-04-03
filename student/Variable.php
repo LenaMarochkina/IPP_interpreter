@@ -21,6 +21,8 @@ class Variable
      */
     private E_ARGUMENT_TYPE $type;
 
+    private bool $defined = false;
+
     /**
      * Variable constructor
      *
@@ -43,6 +45,16 @@ class Variable
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setDefined(bool $defined): void
+    {
+        $this->defined = $defined;
+    }
+
+    public function isDefined(): bool
+    {
+        return $this->defined;
     }
 
     /**
@@ -72,6 +84,7 @@ class Variable
     public function setValue(string $value): void
     {
         $this->value = new Value($value);
+        $this->defined = true;
     }
 
     /**

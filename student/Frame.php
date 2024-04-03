@@ -3,6 +3,7 @@
 namespace IPP\Student;
 
 use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\VariableAccessException;
 
 class Frame
 {
@@ -41,12 +42,12 @@ class Frame
      *
      * @param string $name Variable name
      * @return Variable Found variable
-     * @throws SemanticException If variable does not exist
+     * @throws VariableAccessException If variable does not exist
      */
     public function getVariable(string $name): Variable
     {
         if (!$this->containsVariable($name)) {
-            throw new SemanticException("Variable $name does not exist in frame {$this->frame->value}");
+            throw new VariableAccessException("Variable $name does not exist in frame {$this->frame->value}");
         }
 
         return $this->variables[$name];
