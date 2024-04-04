@@ -21,6 +21,7 @@ class Variable
      */
     private E_ARGUMENT_TYPE $type;
 
+    /** @var bool Is variable defined */
     private bool $defined = false;
 
     /**
@@ -47,11 +48,21 @@ class Variable
         return $this->name;
     }
 
+    /**
+     * Set variable defined
+     *
+     * @param bool $defined Variable defined
+     */
     public function setDefined(bool $defined): void
     {
         $this->defined = $defined;
     }
 
+    /**
+     * Check if variable is defined
+     *
+     * @return bool True if variable is defined, false otherwise
+     */
     public function isDefined(): bool
     {
         return $this->defined;
@@ -81,15 +92,14 @@ class Variable
         return $this->type;
     }
 
+    /**
+     * Set variable value
+     *
+     * @param string $value Variable value
+     */
     public function setValue(string $value): void
     {
         $this->value = new Value($value);
-        $this->defined = true;
-    }
-
-    public function setTypedValue(string|int|bool|null $value): void
-    {
-        $this->value = new Value((string)$value);
         $this->defined = true;
     }
 
@@ -101,16 +111,6 @@ class Variable
     public function getValue(): Value
     {
         return $this->value;
-    }
-
-    /**
-     * Get variable value
-     *
-     * @return string Variable value
-     */
-    public function getStringValue(): string
-    {
-        return $this->value->getValue();
     }
 
     /**

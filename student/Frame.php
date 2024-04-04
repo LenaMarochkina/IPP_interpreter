@@ -29,6 +29,7 @@ class Frame
      * @param E_ARGUMENT_TYPE $type Variable type
      * @param string|null $value Variable value
      * @return Variable Created variable
+     * @throws SemanticException If variable already exists
      */
     public function createVariable(string $name, E_ARGUMENT_TYPE $type, string|null $value = null): Variable
     {

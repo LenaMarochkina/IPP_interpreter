@@ -3,15 +3,29 @@
 namespace IPP\Student\Instructions;
 
 use IPP\Student\E_ARGUMENT_TYPE;
+use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
+use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use IPP\Student\Value;
-use IPP\Student\Variable;
+use Override;
 
 class READInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute READ instruction
+     * Reads a value from the input and stores it in the argument variable
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws FrameAccessException If some variable frame does not exist
+     * @throws SemanticException If some semantic error occurs
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentVariable,
@@ -20,6 +34,10 @@ class READInstruction implements InstructionInterface
             $instruction->getArgument(0),
             $instruction->getArgument(1),
         ];
+
+        if ($argumentVariable === null || $argumentType === null) {
+            throw new SemanticException("Invalid READ instruction");
+        }
 
         $input = match ($argumentType->getValue()->getValue()) {
             "int" => $interpreter->getInput()->readInt(),

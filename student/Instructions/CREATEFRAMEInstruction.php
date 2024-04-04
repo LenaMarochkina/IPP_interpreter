@@ -6,11 +6,18 @@ use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Frame;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Variable;
+use Override;
 
 class CREATEFRAMEInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute CREATEFRAME instruction
+     * Create a new temporary frame
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $interpreter->temporaryFrame = new Frame(E_VARIABLE_FRAME::TF);
     }

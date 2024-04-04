@@ -3,20 +3,30 @@
 namespace IPP\Student\Instructions;
 
 use IPP\Student\E_ARGUMENT_TYPE;
-use IPP\Student\E_INSTRUCTION_NAME;
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
-use IPP\Student\Frame;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Variable;
+use Override;
 
 class JUMPIFNEQInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute JUMPIFNEQ instruction
+     * Jumps to the specified label if the operands are not equal
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If the variable frame does not exist
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws SemanticException If some semantic error occurs
+     * @throws ValueException If some value is wrong
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentLabel,
@@ -28,7 +38,14 @@ class JUMPIFNEQInstruction implements InstructionInterface
             $instruction->getArgument(2),
         ];
 
+        if ($argumentLabel === null || $argumentLeftSymbol === null || $argumentRightSymbol === null) {
+            throw new SemanticException("Invalid JUMPIFNEQ instruction");
+        }
+
         $labelValue = $argumentLabel->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+        if (!is_string($labelValue))
+            throw new ValueException("JUMPIFNEQ instruction label must be a string");
 
         if (!array_key_exists($labelValue, $interpreter->labels))
             throw new SemanticException("Unknown label $labelValue");

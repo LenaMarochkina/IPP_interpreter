@@ -2,16 +2,22 @@
 
 namespace IPP\Student\Instructions;
 
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
-use IPP\Student\Frame;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Variable;
+use Override;
 
 class PUSHFRAMEInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute PUSHFRAME instruction
+     * Creates a new frame and pushes it to the local frame stack
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If temporary frame does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
 
         if ($interpreter->temporaryFrame === null) {

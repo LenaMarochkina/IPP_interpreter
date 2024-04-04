@@ -3,7 +3,7 @@
 namespace IPP\Student;
 
 use DivisionByZeroError;
-use Exception;
+
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
@@ -14,7 +14,6 @@ use DOMElement;
 use DOMAttr;
 use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
-use IPP\Student\Exception\StringOperationException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 
@@ -40,7 +39,7 @@ global $RELATIONAL_MAP;
 $RELATIONAL_MAP = [
     E_INSTRUCTION_NAME::LT->value => fn(mixed $a, mixed $b) => $a < $b,
     E_INSTRUCTION_NAME::GT->value => fn(mixed $a, mixed $b) => $a > $b,
-    E_INSTRUCTION_NAME::EQ->value => fn(mixed $a, mixed $b) => $a == $b,
+    E_INSTRUCTION_NAME::EQ->value => fn(mixed $a, mixed $b) => $a === $b,
 ];
 
 global $BOOL_MAP;
@@ -67,7 +66,7 @@ class Interpreter extends AbstractInterpreter
     public GenericStack $localFrameStack;
 
     /**
-     * @var array{string: int} $labels Labels
+     * @var array<string, int> $labels Labels
      */
     public array $labels = [];
 
@@ -118,10 +117,10 @@ class Interpreter extends AbstractInterpreter
      * Get variable frame
      *
      * @param E_VARIABLE_FRAME $frame Frame type
-     * @return Frame Frame instance
+     * @return Frame|null Frame instance
      * @throws FrameAccessException If frame is not valid
      */
-    public function getVariableFrame(E_VARIABLE_FRAME $frame): Frame
+    public function getVariableFrame(E_VARIABLE_FRAME $frame): Frame|null
     {
         $this->validateVariableFrame($frame);
 
@@ -147,9 +146,19 @@ class Interpreter extends AbstractInterpreter
             throw new SemanticException("Argument {$argument->getStringValue()} is not a variable type");
         }
 
+        if (!is_string($argument->getStringValue())) {
+            throw new SemanticException("Argument {$argument->getStringValue()} is not a string");
+        }
+
         [$variableFrame, $variableName] = Variable::parseVariableName($argument->getStringValue());
 
-        return $this->getVariableFrame($variableFrame)->getVariable($variableName);
+        $frame = $this->getVariableFrame($variableFrame);
+
+        if ($frame === null) {
+            throw new FrameAccessException("Variable frame $variableFrame->value does not exist");
+        }
+
+        return $frame->getVariable($variableName);
     }
 
     /**
@@ -177,8 +186,9 @@ class Interpreter extends AbstractInterpreter
      *
      * @param Argument $argument Argument instance
      * @return E_ARGUMENT_TYPE Argument type
-     * @throws OperandTypeException If argument is not a variable type
+     * @throws FrameAccessException If variable frame is not valid
      * @throws SemanticException If argument type is invalid
+     * @throws VariableAccessException If variable does not exist
      */
     public function getOperandFinalType(Argument $argument): E_ARGUMENT_TYPE
     {
@@ -193,13 +203,12 @@ class Interpreter extends AbstractInterpreter
      * Get operand typed value
      *
      * @param Argument|null $argument Argument instance
-     * @param bool $allowNull Allow null value
      * @return string|int|bool|null Typed value
-     * @throws FrameAccessException
+     * @throws FrameAccessException If variable frame is not valid
      * @throws OperandTypeException If argument type is invalid
      * @throws SemanticException If argument is not a variable type
-     * @throws VariableAccessException
-     * @throws ValueException
+     * @throws VariableAccessException If variable does not exist
+     * @throws ValueException If variable does not have value
      */
     public function getOperandTypedValue(Argument|null $argument): string|int|bool|null
     {
@@ -228,8 +237,9 @@ class Interpreter extends AbstractInterpreter
      * @param Argument $argument Argument instance
      * @param E_ARGUMENT_TYPE $type Type to check
      * @return bool True if operand type is of the given type, false otherwise
-     * @throws OperandTypeException If operand type is invalid
+     * @throws FrameAccessException If variable frame is not valid
      * @throws SemanticException If argument is not a variable type
+     * @throws VariableAccessException If variable does not exist
      */
     public function isOperandTypeOf(Argument $argument, E_ARGUMENT_TYPE $type): bool
     {
@@ -242,8 +252,9 @@ class Interpreter extends AbstractInterpreter
      * @param Argument $left Left operand
      * @param Argument $right Right operand
      * @return bool True if operands are of the same type, false otherwise
-     * @throws OperandTypeException If operand type is invalid
+     * @throws FrameAccessException If variable frame is not valid
      * @throws SemanticException If operand is not a variable type
+     * @throws VariableAccessException If variable does not exist
      */
     public function isOperandSameType(Argument $left, Argument $right): bool
     {
@@ -255,7 +266,6 @@ class Interpreter extends AbstractInterpreter
      *
      * @param E_ARGUMENT_TYPE $type Output value type
      * @param string|int|bool $value Output value
-     * @return void
      * @throws OperandTypeException If value type is not a variable type and cannot be written to output
      */
     public function runOutput(E_ARGUMENT_TYPE $type, string|int|bool|null $value): void
@@ -265,7 +275,7 @@ class Interpreter extends AbstractInterpreter
                 $this->stdout->writeInt((int)$value);
                 break;
             case E_ARGUMENT_TYPE::STRING:
-                $this->stdout->writeString($value);
+                $this->stdout->writeString((string)$value);
                 break;
             case E_ARGUMENT_TYPE::BOOL:
                 $this->stdout->writeBool($value == "true");
@@ -281,11 +291,12 @@ class Interpreter extends AbstractInterpreter
      * Process ADD, SUB, MUL and IDIV instructions
      *
      * @param Instruction $instruction Instruction instance
-     * @throws OperandTypeException If operands are not of type int
-     * @throws SemanticException If result variable is not a variable type
-     * @throws OperandValueException If division by zero occurs
-     * @throws ValueException If variable operands do not have value
      * @throws FrameAccessException If variable frame is not valid
+     * @throws OperandTypeException If operands are not of type int
+     * @throws OperandValueException If division by zero occurs
+     * @throws SemanticException If result variable is not a variable type
+     * @throws ValueException If variable operands do not have value
+     * @throws VariableAccessException If variable does not exist
      */
     public function runMath(Instruction $instruction): void
     {
@@ -293,6 +304,10 @@ class Interpreter extends AbstractInterpreter
         $resultVariableArgument = $instruction->getArgument(0);
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
+
+        if ($resultVariableArgument === null || $leftOperand === null || $rightOperand === null) {
+            throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
+        }
 
         $leftTypedValue = $this->getOperandTypedValue($leftOperand);
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
@@ -316,8 +331,11 @@ class Interpreter extends AbstractInterpreter
      * Process LT, GT and EQ instructions
      *
      * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If variable frame is not valid
      * @throws OperandTypeException If operands are not of the same type
      * @throws SemanticException If result variable is not a variable type
+     * @throws ValueException If variable operands do not have value
+     * @throws VariableAccessException If variable does not exist
      */
     public function runRelational(Instruction $instruction): void
     {
@@ -326,11 +344,26 @@ class Interpreter extends AbstractInterpreter
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
 
+        if ($resultVariableArgument === null || $leftOperand === null || $rightOperand === null) {
+            throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
+        }
+
         $leftTypedValue = $this->getOperandTypedValue($leftOperand);
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
-        if (!$this->isOperandSameType($leftOperand, $rightOperand)) {
+        if (
+            ($instruction->getName() === E_INSTRUCTION_NAME::LT || $instruction->getName() === E_INSTRUCTION_NAME::GT) &&
+            (($leftTypedValue === null || $rightTypedValue === null) || !$this->isOperandSameType($leftOperand, $rightOperand))
+        ) {
             throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of the same type");
+        }
+
+        if (
+            ($instruction->getName() === E_INSTRUCTION_NAME::EQ) &&
+            ($leftTypedValue !== null && $rightTypedValue !== null) &&
+            !$this->isOperandSameType($leftOperand, $rightOperand)
+        ) {
+            throw new OperandTypeException("EQ instruction operands must be of the same type");
         }
 
         $func = $RELATIONAL_MAP[$instruction->getName()->value];
@@ -340,12 +373,34 @@ class Interpreter extends AbstractInterpreter
         $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
     }
 
+    /**
+     * Process AND, OR and NOT instructions
+     *
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If variable frame is not valid
+     * @throws OperandTypeException If operands are not of type bool
+     * @throws SemanticException If result variable is not a variable type
+     * @throws ValueException If variable operands do not have value
+     * @throws VariableAccessException If variable does not exist
+     */
     public function runBool(Instruction $instruction): void
     {
         global $BOOL_MAP;
         $resultVariableArgument = $instruction->getArgument(0);
         $leftOperand = $instruction->getArgument(1);
         $rightOperand = $instruction->getArgument(2);
+
+        if ($resultVariableArgument === null || $leftOperand === null) {
+            if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
+                if ($rightOperand !== null) {
+                    throw new SemanticException("Invalid number of arguments for NOT instruction");
+                }
+            } else {
+                if ($rightOperand !== null) {
+                    throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
+                }
+            }
+        }
 
         $leftTypedValue = $this->getOperandTypedValue($leftOperand);
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
@@ -367,6 +422,14 @@ class Interpreter extends AbstractInterpreter
         $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
     }
 
+    /**
+     * Process and interpret xml source
+     *
+     * @return int Exit code
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws SemanticException If some semantic error occurs
+     * @throws XMLException If XML parsing error occurs
+     */
     public function execute(): int
     {
         $dom = $this->source->getDOMDocument();
@@ -384,12 +447,13 @@ class Interpreter extends AbstractInterpreter
 
             $attributes = $instructionElement->attributes;
 
-            /** @var DOMAttr $opcodeAttribute */
+            /** @var DOMAttr|null $opcodeAttribute */
             $opcodeAttribute = $attributes->getNamedItem('opcode');
             if (!$opcodeAttribute || !$opcodeAttribute->value) {
                 throw new XMLException("Missing opcode attribute at $index ($instructionElement->textContent)");
             }
 
+            /** @var DOMAttr|null $orderAttribute */
             $orderAttribute = $attributes->getNamedItem('order');
 
             if (!$orderAttribute || !$orderAttribute->value || !is_numeric($orderAttribute->value)) {
@@ -400,6 +464,10 @@ class Interpreter extends AbstractInterpreter
 
             if ($intOrder < 1) {
                 throw new XMLException("Invalid order attribute at $index ($instructionElement->textContent)");
+            }
+
+            if (!$opcodeAttribute->nodeValue) {
+                throw new XMLException("Missing opcode attribute at $index ($instructionElement->textContent)");
             }
 
             $instructionName = E_INSTRUCTION_NAME::fromValue($opcodeAttribute->nodeValue);
@@ -419,17 +487,24 @@ class Interpreter extends AbstractInterpreter
                     throw new XMLException("Invalid argument tag order at $index ($instructionElement->textContent)");
                 }
 
-                $argumentType = $argumentElement->attributes->getNamedItem("type")->value;
+                /** @var DOMAttr|null $argumentTypeAttribute */
+                $argumentTypeAttribute = $argumentElement->attributes->getNamedItem("type");
+
+                if (!$argumentTypeAttribute || !$argumentTypeAttribute->value) {
+                    throw new XMLException("Missing argument type attribute at $index ($instructionElement->textContent)");
+                }
+
+                $argumentType = $argumentTypeAttribute->value;
 
                 if (!E_ARGUMENT_TYPE::containsValue($argumentType)) {
                     throw new OperandTypeException("Invalid argument type at $index ($instructionElement->textContent)");
                 }
 
-                $argument = E_ARGUMENT_TYPE::{E_ARGUMENT_TYPE::fromValue($argumentType)};
+                $argument = E_ARGUMENT_TYPE::fromValue($argumentType);
 
                 $argumentValue = $argumentElement->nodeValue;
 
-                $parsedArguments[] = new Argument($argumentIndex, $argumentValue, $argument);
+                $parsedArguments[] = new Argument($argumentValue, $argument);
             }
 
             $parsedInstructions[] = new Instruction($instructionName, $parsedArguments, (int)$orderAttribute->value);
@@ -439,7 +514,15 @@ class Interpreter extends AbstractInterpreter
             if ($instruction->getName() === E_INSTRUCTION_NAME::LABEL) {
                 $labelArgument = $instruction->getArgument(0);
 
+                if ($labelArgument === null) {
+                    throw new SemanticException("Invalid number of arguments for LABEL instruction");
+                }
+
                 $labelValue = $labelArgument->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
+
+                if (!is_string($labelValue)) {
+                    throw new SemanticException("Invalid label value");
+                }
 
                 if (array_key_exists($labelValue, $this->labels)) {
                     throw new SemanticException("Duplicate label $labelValue");
@@ -451,9 +534,12 @@ class Interpreter extends AbstractInterpreter
 
         for (; $this->instructionCounter < count($parsedInstructions); $this->instructionCounter++) {
             $instruction = $parsedInstructions[$this->instructionCounter];
-            $executionInstruction = BuiltInInstruction::getInstruction($instruction->getName());
+            $buildInInstruction = BuiltInInstruction::getInstruction($instruction->getName());
+            $executionInstruction = $buildInInstruction->getExecutionInstruction();
 
-            $executionInstruction->getExecutionInstruction()->execute($this, $instruction);
+            if ($executionInstruction === null) continue;
+
+            $executionInstruction->execute($this, $instruction);
         }
 
         return 0;

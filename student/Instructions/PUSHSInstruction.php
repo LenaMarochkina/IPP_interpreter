@@ -2,16 +2,30 @@
 
 namespace IPP\Student\Instructions;
 
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
-use IPP\Student\Frame;
+use IPP\Student\Exception\OperandTypeException;
+use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\ValueException;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Variable;
+use Override;
 
 class PUSHSInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute PUSHS instruction
+     * Pushes the value of the argument to the data stack
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If some variable frame does not exist
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws SemanticException If some semantic error occurs
+     * @throws ValueException If some value is wrong
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $argument = $instruction->getArgument(0);
 

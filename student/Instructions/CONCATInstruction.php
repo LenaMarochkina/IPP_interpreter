@@ -3,19 +3,30 @@
 namespace IPP\Student\Instructions;
 
 use IPP\Student\E_ARGUMENT_TYPE;
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
+use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
-use IPP\Student\Frame;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Value;
-use IPP\Student\Variable;
+use Override;
 
 class CONCATInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute CONCAT instruction
+     * Concatenates two strings and stores the result in the first operand
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If some variable frame does not exist
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws ValueException If some value is wrong
+     * @throws SemanticException If some semantic error occurs
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentVariable,
@@ -26,6 +37,10 @@ class CONCATInstruction implements InstructionInterface
             $instruction->getArgument(1),
             $instruction->getArgument(2),
         ];
+
+        if ($argumentVariable === null || $argumentLeftString === null || $argumentRightString === null) {
+            throw new SemanticException("Invalid CONCAT instruction");
+        }
 
         $argumentLeftStringValue = $interpreter->getOperandTypedValue($argumentLeftString);
         $argumentRightStringValue = $interpreter->getOperandTypedValue($argumentRightString);

@@ -21,9 +21,9 @@ class Value
     /**
      * Get pure value
      *
-     * @return string Value
+     * @return string|null Value
      */
-    public function getValue(): string
+    public function getValue(): string|null
     {
         return $this->value;
     }
@@ -38,7 +38,7 @@ class Value
     public function getTypedValue(E_ARGUMENT_TYPE $type): int|string|bool|null
     {
         if (!$type->isLiteralType()) {
-            throw new SemanticException("Invalid variable type '$type->value' [{$type->name}]");
+            throw new SemanticException("Invalid variable type '$type->value' [$type->name]");
         }
 
         $value = $this->value;
@@ -93,10 +93,14 @@ class Value
      */
     public static function getTypedValueString(E_ARGUMENT_TYPE $type, int|string|bool|null $value): string
     {
+        $string_value = '';
+
         if ($type === E_ARGUMENT_TYPE::STRING) {
             if (!isset($value)) {
-                return '';
+                return $string_value;
             }
+
+            $string_value = (string)$value;
         }
 
         if ($type === E_ARGUMENT_TYPE::BOOL) {
@@ -104,7 +108,7 @@ class Value
                 return 'false';
             }
 
-            $value = $value ? 'true' : 'false';
+            $string_value = $value ? 'true' : 'false';
         }
 
         if ($type === E_ARGUMENT_TYPE::INT) {
@@ -112,16 +116,18 @@ class Value
                 return '0';
             }
 
-            $value = (string)$value;
+            $string_value = (string)$value;
         }
 
-        if ($type === E_ARGUMENT_TYPE::NIL) {
-            return '';
-        }
-
-        return $value;
+        return $string_value;
     }
 
+    /**
+     * Determine type of the value
+     *
+     * @param int|string|bool|null $value Value to determine type of
+     * @return E_ARGUMENT_TYPE Type of the value
+     */
     public static function determineValueType(int|string|bool|null $value): E_ARGUMENT_TYPE
     {
         if (is_string($value)) {

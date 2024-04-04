@@ -14,11 +14,22 @@ enum E_ARGUMENT_TYPE: string
     case TYPE = 'type';
     case NIL = 'nil';
 
+    /**
+     * Check if enum is literal type
+     *
+     * @return bool True if enum is literal type, false otherwise
+     */
     public function isLiteralType(): bool
     {
         return in_array($this, [self::INT, self::STRING, self::BOOL, self::NIL]);
     }
 
+    /**
+     * Check if enum contains value
+     *
+     * @param string $value Enum value
+     * @return bool True if enum contains value, false otherwise
+     */
     public static function containsValue(string $value): bool
     {
         foreach (self::cases() as $status) {
@@ -29,13 +40,20 @@ enum E_ARGUMENT_TYPE: string
         return false;
     }
 
-    public static function fromValue(string $value): string
+    /**
+     * Get enum value from string
+     *
+     * @param string $value Enum value
+     * @return E_ARGUMENT_TYPE Enum value
+     * @throws SemanticException If value is not a valid type
+     */
+    public static function fromValue(string $value): E_ARGUMENT_TYPE
     {
         foreach (self::cases() as $status) {
             if ($value === $status->value) {
-                return $status->name;
+                return E_ARGUMENT_TYPE::{$status->name};
             }
         }
-        throw new SemanticException("$value is not a valid instruction " . self::class);
+        throw new SemanticException("$value is not a valid type " . self::class);
     }
 }

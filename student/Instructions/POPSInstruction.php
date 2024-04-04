@@ -2,18 +2,29 @@
 
 namespace IPP\Student\Instructions;
 
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
+use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
-use IPP\Student\Frame;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use IPP\Student\Value;
-use IPP\Student\Variable;
+use Override;
 
 class POPSInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute POPS instruction
+     * Pops the value from the data stack and stores it to the argument variable
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If some variable frame does not exist
+     * @throws ValueException If some value is wrong
+     * @throws SemanticException If some semantic error occurs
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $argument = $instruction->getArgument(0);
 

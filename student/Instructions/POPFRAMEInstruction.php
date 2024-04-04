@@ -2,16 +2,22 @@
 
 namespace IPP\Student\Instructions;
 
-use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
-use IPP\Student\Frame;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Variable;
+use Override;
 
 class POPFRAMEInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute POPFRAME instruction
+     * Pops the top frame from the local frame stack and makes it the temporary frame
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws FrameAccessException If local frame does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         if ($interpreter->localFrameStack->isEmpty()) {
             throw new FrameAccessException("Local frame does not exist");

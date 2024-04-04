@@ -3,16 +3,32 @@
 namespace IPP\Student\Instructions;
 
 use IPP\Student\E_ARGUMENT_TYPE;
+use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
+use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\StringOperationException;
+use IPP\Student\Exception\ValueException;
+use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Value;
-use IPP\Student\Variable;
+use Override;
 
 class GETCHARInstruction implements InstructionInterface
 {
-    #[\Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    /**
+     * Execute GETCHAR instruction
+     * Gets the character at the specified index from the string and stores it in the variable
+     *
+     * @param Interpreter $interpreter Interpreter instance
+     * @param Instruction $instruction Instruction instance
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws StringOperationException If some string operation fails
+     * @throws FrameAccessException If some variable frame does not exist
+     * @throws SemanticException If some semantic error occurs
+     * @throws ValueException If some value is wrong
+     * @throws VariableAccessException If some variable does not exist
+     */
+    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentVariable,
@@ -23,6 +39,10 @@ class GETCHARInstruction implements InstructionInterface
             $instruction->getArgument(1),
             $instruction->getArgument(2),
         ];
+
+        if ($argumentVariable === null || $argumentString === null || $argumentIndex === null) {
+            throw new SemanticException("Invalid GETCHAR instruction");
+        }
 
         $argumentStringValue = $interpreter->getOperandTypedValue($argumentString);
         $argumentIndexValue = $interpreter->getOperandTypedValue($argumentIndex);
@@ -35,8 +55,8 @@ class GETCHARInstruction implements InstructionInterface
             throw new OperandTypeException("GETCHAR instruction third operand must be of type int");
         }
 
-        if ($argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
-            throw new StringOperationException("GETCHAR instruction index out of bounds: $argumentIndexValue >= " . mb_strlen($argumentStringValue));
+        if (!is_string($argumentStringValue) || $argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
+            throw new StringOperationException("GETCHAR instruction index out of bounds: $argumentIndexValue");
         }
 
         $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);

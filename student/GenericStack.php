@@ -58,7 +58,7 @@ class GenericStack
      */
     public function getLastItem(): mixed
     {
-        return end($this->items);
+        return $this->isEmpty() ? null : $this->items[count($this->items) - 1];
     }
 }
 

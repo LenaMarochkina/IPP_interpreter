@@ -6,25 +6,13 @@ use IPP\Student\Exception\SemanticException;
 
 class Argument
 {
-    private int $_order;
     private Value $value;
     private E_ARGUMENT_TYPE $type;
 
-    public function __construct(int $order, string $value, E_ARGUMENT_TYPE $type)
+    public function __construct(string|null $value, E_ARGUMENT_TYPE $type)
     {
-        $this->_order = $order;
         $this->value = new Value($value);
         $this->type = $type;
-    }
-
-    /**
-     * Get argument order
-     *
-     * @return int Order of the argument
-     */
-    public function getOrder(): int
-    {
-        return $this->_order;
     }
 
     /**
@@ -40,9 +28,9 @@ class Argument
     /**
      * Get argument string value
      *
-     * @return string Argument value
+     * @return string|null Argument value
      */
-    public function getStringValue(): string
+    public function getStringValue(): string|null
     {
         return $this->value->getValue();
     }

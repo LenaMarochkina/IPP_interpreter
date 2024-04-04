@@ -188,6 +188,7 @@ class BuiltInInstruction
      */
     private array $args;
 
+    /** @var InstructionInterface|null instruction to execute */
     private ?InstructionInterface $instruction;
 
     /**
@@ -201,6 +202,11 @@ class BuiltInInstruction
         $this->instruction = $instruction;
     }
 
+    /**
+     * Get instruction by name.
+     *
+     * @throws SemanticException if instruction not found
+     */
     public static function getInstruction(E_INSTRUCTION_NAME $name): BuiltInInstruction
     {
         global $INSTRUCTIONS;
@@ -235,28 +241,6 @@ class BuiltInInstruction
     }
 
     /**
-     * Get arguments count of the instruction.
-     *
-     * @return int count of arguments
-     */
-    public function getArgsCount(): int
-    {
-        return count($this->args);
-    }
-
-    /**
-     * Get argument possible types at index.
-     *
-     * @param int $index index of the argument
-     *
-     * @return E_ARGUMENT_TYPE[] possible types of the argument
-     */
-    public function getArgTypes(int $index): array
-    {
-        return $this->args[$index];
-    }
-
-    /**
      * Validates arguments of the instruction.
      *
      * @param Argument[] $args arguments to validate
@@ -272,11 +256,16 @@ class BuiltInInstruction
 
         foreach ($args as $index => $arg) {
             if (!in_array($arg->getType(), $this->args[$index])) {
-                throw new OperandTypeException("Wrong type of argument {$arg->getStringValue()} at {$index} position for instruction '{$this->name->value}'");
+                throw new OperandTypeException("Wrong type of argument {$arg->getStringValue()} at $index position for instruction '{$this->name->value}'");
             }
         }
     }
 
+    /**
+     * Get instruction to execute.
+     *
+     * @return InstructionInterface|null instruction to execute
+     */
     public function getExecutionInstruction(): ?InstructionInterface
     {
         return $this->instruction;
