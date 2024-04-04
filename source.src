@@ -2,7 +2,7 @@
 DEFVAR GF@result
 DEFVAR GF@left
 DEFVAR GF@right
-MOVE GF@left int@2
+MOVE GF@left int@10
 MOVE GF@right int@3
 ADD GF@result GF@left GF@right
 WRITE GF@result
