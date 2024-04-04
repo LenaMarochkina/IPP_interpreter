@@ -7,11 +7,6 @@ use IPP\Student\Exception\SemanticException;
 class Variable
 {
     /**
-     * @var string Variable name
-     */
-    private string $name;
-
-    /**
      * @var Value Variable value
      */
     private Value $value;
@@ -27,25 +22,13 @@ class Variable
     /**
      * Variable constructor
      *
-     * @param string $name Variable name
      * @param E_ARGUMENT_TYPE $type Variable type
      * @param string|null $value Variable value. Default is null
      */
-    public function __construct(string $name, E_ARGUMENT_TYPE $type, string|null $value = null)
+    public function __construct(E_ARGUMENT_TYPE $type, string|null $value = null)
     {
-        $this->name = $name;
         $this->type = $type;
         $this->value = new Value($value);
-    }
-
-    /**
-     * Get variable name
-     *
-     * @return string Variable name
-     */
-    public function getName(): string
-    {
-        return $this->name;
     }
 
     /**
@@ -101,16 +84,6 @@ class Variable
     {
         $this->value = new Value($value);
         $this->defined = true;
-    }
-
-    /**
-     * Get variable value
-     *
-     * @return Value Variable value
-     */
-    public function getValue(): Value
-    {
-        return $this->value;
     }
 
     /**

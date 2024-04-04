@@ -47,16 +47,6 @@ class Instruction
     }
 
     /**
-     * Get instruction arguments
-     *
-     * @return Argument[] array of instruction arguments
-     */
-    public function getArguments(): array
-    {
-        return $this->_arguments;
-    }
-
-    /**
      * Get argument at index
      *
      * @param int $index index of the argument

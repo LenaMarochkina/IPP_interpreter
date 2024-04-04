@@ -41,6 +41,11 @@ use IPP\Student\Instructions\WRITEInstruction;
 
 global $INSTRUCTIONS;
 
+/**
+ * Built-in instructions.
+ *
+ * @var BuiltInInstruction[] $INSTRUCTIONS built-in instructions
+ */
 $INSTRUCTIONS = [
     new BuiltInInstruction(E_INSTRUCTION_NAME::MOVE, [
         [E_ARGUMENT_TYPE::VAR],
@@ -228,16 +233,6 @@ class BuiltInInstruction
     public function getName(): E_INSTRUCTION_NAME
     {
         return $this->name;
-    }
-
-    /**
-     * Get types of arguments for the instruction.
-     *
-     * @return E_ARGUMENT_TYPE[][] possible types of arguments
-     */
-    public function getArgs(): array
-    {
-        return $this->args;
     }
 
     /**

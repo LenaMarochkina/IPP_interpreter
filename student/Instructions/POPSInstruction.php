@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use Exception;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
@@ -23,10 +24,15 @@ class POPSInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist
+     * @throws Exception If some stack error occurs
      */
     #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $argument = $instruction->getArgument(0);
+
+        if ($argument === null) {
+            throw new SemanticException("Invalid POPS instruction");
+        }
 
         if ($interpreter->dataStack->isEmpty()) {
             throw new ValueException("Data stack is empty");
@@ -35,8 +41,10 @@ class POPSInstruction implements InstructionInterface
         $value = $interpreter->dataStack->pop();
         $detectedType = Value::determineValueType($value);
 
-        $interpreter->getArgumentVariable($argument)->setDefined(true);
-        $interpreter->getArgumentVariable($argument)->setType($detectedType);
-        $interpreter->getArgumentVariable($argument)->setValue(Value::getTypedValueString($detectedType, $value));
+        $argumentVariable = $interpreter->getArgumentVariable($argument);
+
+        $argumentVariable->setDefined(true);
+        $argumentVariable->setType($detectedType);
+        $argumentVariable->setValue(Value::getTypedValueString($detectedType, $value));
     }
 }

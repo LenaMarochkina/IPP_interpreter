@@ -391,14 +391,16 @@ class Interpreter extends AbstractInterpreter
         $rightOperand = $instruction->getArgument(2);
 
         if ($resultVariableArgument === null || $leftOperand === null) {
-            if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
-                if ($rightOperand !== null) {
-                    throw new SemanticException("Invalid number of arguments for NOT instruction");
-                }
-            } else {
-                if ($rightOperand !== null) {
-                    throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
-                }
+            throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
+        }
+
+        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
+            if ($rightOperand !== null) {
+                throw new SemanticException("Invalid number of arguments for NOT instruction");
+            }
+        } else {
+            if ($rightOperand === null) {
+                throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
             }
         }
 

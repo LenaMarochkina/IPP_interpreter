@@ -7,8 +7,6 @@ use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use IPP\Student\Value;
-use IPP\Student\Variable;
 use Override;
 
 class JUMPInstruction implements InstructionInterface

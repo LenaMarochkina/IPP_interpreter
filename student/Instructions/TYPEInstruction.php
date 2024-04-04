@@ -4,7 +4,6 @@ namespace IPP\Student\Instructions;
 
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
-use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
@@ -19,7 +18,6 @@ class TYPEInstruction implements InstructionInterface
      *
      * @param Interpreter $interpreter Interpreter instance
      * @param Instruction $instruction Instruction instance
-     * @throws OperandTypeException If some operand has wrong type
      * @throws FrameAccessException If some variable frame does not exist
      * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist

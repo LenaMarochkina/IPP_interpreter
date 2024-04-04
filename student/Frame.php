@@ -37,7 +37,7 @@ class Frame
             throw new SemanticException("Variable $name already exists in frame {$this->frame->value}");
         }
 
-        $variable = new Variable($name, $type, $value);
+        $variable = new Variable($type, $value);
         $this->variables[$name] = $variable;
         return $variable;
     }
