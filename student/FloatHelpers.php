@@ -6,13 +6,12 @@ class FloatHelpers
 {
     public static function hexdecf(string $hex): float
     {
-        [$integer_part, $fractional_part] = explode('.', $hex);
+        $exploded = explode('.', $hex);
+        $integer_part = $exploded[0];
+        $fractional_part = $exploded[1] ?? '';
         $integer_value = hexdec($integer_part);
-        $fractional_value = intval(base_convert($fractional_part, 16, 10));
-        $fractional_value /= pow(16, strlen($fractional_part));
-        $decimal_value = $integer_value + $fractional_value;
-
-        return $decimal_value;
+        $fractional_value = $fractional_part ? intval(base_convert($fractional_part, 16, 10)) / pow(16, strlen($fractional_part)) : 0;
+        return $integer_value + $fractional_value;
     }
 
     public static function dechexf(string $decimal): string
@@ -40,17 +39,17 @@ class FloatHelpers
 
         if (is_null($value)) return null;
 
-        if (!preg_match('/^(-)?0x([\dA-Fa-f]*\.[\dA-Fa-f]*)p([+-]\d*)$/m', $value, $matches)) {
+        if (!preg_match('/^(-)?0x([\dA-Fa-f]*(\.[\dA-Fa-f]*)?)p([+-]\d*)$/m', $value, $matches)) {
             return null;
         }
 
-        if (count($matches) !== 4) {
+        if (count($matches) !== 5) {
             return null;
         }
 
         $sign = $matches[1] ?? '';
         $base = $matches[2];
-        $power = $matches[3];
+        $power = $matches[4];
 
         $decimal_value = self::hexdecf($base);
 
