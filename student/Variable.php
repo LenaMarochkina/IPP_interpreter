@@ -89,10 +89,10 @@ class Variable
     /**
      * Return variable value based on type
      *
-     * @return string|int|bool|null Typed value
+     * @return string|float|int|bool|null Typed value
      * @throws SemanticException If type is not a string, int or bool
      */
-    public function getTypedValue(): string|int|bool|null
+    public function getTypedValue(): string|float|int|bool|null
     {
         return $this->value->getTypedValue($this->type);
     }

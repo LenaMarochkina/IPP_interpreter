@@ -9,6 +9,7 @@ enum E_ARGUMENT_TYPE: string
     case VAR = 'var';
     case LABEL = 'label';
     case INT = 'int';
+    case FLOAT = 'float';
     case STRING = 'string';
     case BOOL = 'bool';
     case TYPE = 'type';
@@ -21,7 +22,7 @@ enum E_ARGUMENT_TYPE: string
      */
     public function isLiteralType(): bool
     {
-        return in_array($this, [self::INT, self::STRING, self::BOOL, self::NIL]);
+        return in_array($this, [self::INT, self::FLOAT, self::STRING, self::BOOL, self::NIL]);
     }
 
     /**

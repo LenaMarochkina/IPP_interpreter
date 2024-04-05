@@ -38,10 +38,10 @@ class Argument
     /**
      * Get argument typed value
      *
-     * @return int|string|bool|null Typed value
+     * @return float|int|string|bool|null Typed value
      * @throws SemanticException If type is not a string, int or bool
      */
-    public function getTypedValue(): int|string|bool|null
+    public function getTypedValue(): float|int|string|bool|null
     {
         return $this->value->getTypedValue($this->type);
     }

@@ -37,6 +37,7 @@ class WRITEInstruction implements InstructionInterface
         switch ($argument->getType()) {
             case E_ARGUMENT_TYPE::INT:
             case E_ARGUMENT_TYPE::STRING:
+            case E_ARGUMENT_TYPE::FLOAT:
             case E_ARGUMENT_TYPE::BOOL:
             case E_ARGUMENT_TYPE::NIL:
                 $interpreter->runOutput($argument->getType(), $argument->getTypedValue());

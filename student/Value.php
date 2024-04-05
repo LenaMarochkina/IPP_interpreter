@@ -32,10 +32,10 @@ class Value
      * Get typed value
      *
      * @param E_ARGUMENT_TYPE $type Type to cast the value to
-     * @return int|string|bool|null Typed value
+     * @return float|int|string|bool|null Typed value
      * @throws SemanticException If type is not a string, int or bool
      */
-    public function getTypedValue(E_ARGUMENT_TYPE $type): int|string|bool|null
+    public function getTypedValue(E_ARGUMENT_TYPE $type): float|int|string|bool|null
     {
         if (!$type->isLiteralType()) {
             throw new SemanticException("Invalid variable type '$type->value' [$type->name]");
@@ -77,6 +77,22 @@ class Value
             $value = (int)$value;
         }
 
+        if ($type === E_ARGUMENT_TYPE::FLOAT) {
+            if (!isset($value)) {
+                return 0.0;
+            }
+
+            if (!is_string($value)) {
+                throw new SemanticException("Invalid float value '$value'");
+            }
+
+            if (!(($result = FloatHelpers::parseInputFloat($value)) || ($result = floatval($value)))) {
+                throw new SemanticException("Invalid float value '$value'");
+            }
+
+            $value = $result;
+        }
+
         if ($type === E_ARGUMENT_TYPE::NIL) {
             return null;
         }
@@ -88,10 +104,10 @@ class Value
      * Get string value for typed value
      *
      * @param E_ARGUMENT_TYPE $type Type of the value
-     * @param int|string|bool|null $value Value to cast
+     * @param float|int|string|bool|null $value Value to cast
      * @return string String value for typed value
      */
-    public static function getTypedValueString(E_ARGUMENT_TYPE $type, int|string|bool|null $value): string
+    public static function getTypedValueString(E_ARGUMENT_TYPE $type, float|int|string|bool|null $value): string
     {
         $string_value = '';
 
@@ -117,6 +133,14 @@ class Value
             }
 
             $string_value = (string)$value;
+        }
+
+        if ($type === E_ARGUMENT_TYPE::FLOAT) {
+            if (!isset($value)) {
+                return '0.0';
+            }
+
+            $string_value = (float)$value;
         }
 
         return $string_value;

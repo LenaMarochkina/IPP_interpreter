@@ -16,6 +16,7 @@ class E_ARG_TYPE:
     INT = 'int'
     BOOL = 'bool'
     STRING = 'string'
+    FLOAT = 'float'
     NIL = 'nil'
     LABEL = 'label'
     TYPE = 'type'
@@ -43,6 +44,7 @@ CODE_COMMANDS = {
     'ADD': CodeCommand('ADD', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'SUB': CodeCommand('SUB', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'MUL': CodeCommand('MUL', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
+    'DIV': CodeCommand('DIV', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'IDIV': CodeCommand('IDIV', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'LT': CodeCommand('LT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'GT': CodeCommand('GT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
@@ -52,6 +54,8 @@ CODE_COMMANDS = {
     'NOT': CodeCommand('NOT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB]),
     'INT2CHAR': CodeCommand('INT2CHAR', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB]),
     'STRI2INT': CodeCommand('STRI2INT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
+    'INT2FLOAT': CodeCommand('INT2FLOAT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB]),
+    'FLOAT2INT': CodeCommand('FLOAT2INT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB]),
     'READ': CodeCommand('READ', [E_ARG_TYPE.VAR, E_ARG_TYPE.TYPE]),
     'WRITE': CodeCommand('WRITE', [E_ARG_TYPE.SYMB]),
     'CONCAT': CodeCommand('CONCAT', [E_ARG_TYPE.VAR, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
@@ -65,7 +69,25 @@ CODE_COMMANDS = {
     'JUMPIFNEQ': CodeCommand('JUMPIFNEQ', [E_ARG_TYPE.LABEL, E_ARG_TYPE.SYMB, E_ARG_TYPE.SYMB]),
     'EXIT': CodeCommand('EXIT', [E_ARG_TYPE.SYMB]),
     'DPRINT': CodeCommand('DPRINT', [E_ARG_TYPE.SYMB]),
-    'BREAK': CodeCommand('BREAK', [])
+    'BREAK': CodeCommand('BREAK', []),
+    'CLEARS': CodeCommand('CLEARS', []),
+    'ADDS': CodeCommand('ADDS', []),
+    'SUBS': CodeCommand('SUBS', []),
+    'MULS': CodeCommand('MULS', []),
+    'DIVS': CodeCommand('DIVS', []),
+    'IDIVS': CodeCommand('IDIVS', []),
+    'LTS': CodeCommand('LTS', []),
+    'GTS': CodeCommand('GTS', []),
+    'EQS': CodeCommand('EQS', []),
+    'ANDS': CodeCommand('ANDS', []),
+    'ORS': CodeCommand('ORS', []),
+    'NOTS': CodeCommand('NOTS', []),
+    'INT2CHARS': CodeCommand('INT2CHARS', []),
+    'STRI2INTS': CodeCommand('STRI2INTS', []),
+    'INT2FLOATS': CodeCommand('INT2FLOATS', []),
+    'FLOAT2INTS': CodeCommand('FLOAT2INTS', []),
+    'JUMPIFEQS': CodeCommand('JUMPIFEQS', []),
+    'JUMPIFNEQS': CodeCommand('JUMPIFNEQS', []),
 }
 
 
@@ -127,6 +149,10 @@ def is_valid_integer(value):
     else:
         return False
 
+def is_valid_float(value):
+
+    return True
+
 
 def is_valid_bool(value):
     # Check if the boolean value is either 'true' or 'false'
@@ -159,6 +185,12 @@ def recognize_arg_type(arg):
         else:
             print("Invalid boolean format:", arg)
             sys.exit(ERROR_OTHER_SYNTAX)
+    elif arg.startswith("float@"):
+        if is_valid_float(arg[len("float@"):]):
+            return E_ARG_TYPE.FLOAT
+        else:
+            print("Invalid float format:", arg)
+            sys.exit(ERROR_OTHER_SYNTAX)
     elif arg.startswith("string@"):
         return E_ARG_TYPE.STRING
     elif arg.startswith("nil@"):
@@ -167,7 +199,7 @@ def recognize_arg_type(arg):
         else:
             print("Invalid boolean format:", arg)
             sys.exit(ERROR_OTHER_SYNTAX)
-    elif arg in ['int', 'bool', 'string']:
+    elif arg in ['int', 'bool', 'string', 'float']:
         return E_ARG_TYPE.TYPE
     elif validate_variable_name(arg):
         return E_ARG_TYPE.LABEL
@@ -179,10 +211,12 @@ def check_type(arg, arg_number, opcode):
     arg_type = recognize_arg_type(arg)
     if arg_type != CODE_COMMANDS[opcode].arg_types[arg_number]:
         # Check if the arg type is a string constant and the expected type is SYMB
-        if arg_type in [E_ARG_TYPE.STRING, E_ARG_TYPE.INT, E_ARG_TYPE.BOOL, E_ARG_TYPE.NIL, E_ARG_TYPE.VAR] and CODE_COMMANDS[opcode].arg_types[arg_number] == E_ARG_TYPE.SYMB:
+        if arg_type in [E_ARG_TYPE.STRING, E_ARG_TYPE.INT, E_ARG_TYPE.BOOL, E_ARG_TYPE.NIL, E_ARG_TYPE.FLOAT, E_ARG_TYPE.VAR] and CODE_COMMANDS[opcode].arg_types[arg_number] == E_ARG_TYPE.SYMB:
             return  # Allow string constants to satisfy the SYMB requirement
         else:
-            print('Wrong argument type:', arg)
+            print(arg_type)
+            print(arg_type in [E_ARG_TYPE.STRING, E_ARG_TYPE.INT, E_ARG_TYPE.BOOL, E_ARG_TYPE.NIL, E_ARG_TYPE.FLOAT, E_ARG_TYPE.VAR])
+            print('Wrong argument type:', arg, opcode)
             sys.exit(ERROR_OTHER_SYNTAX)
 
 
@@ -286,7 +320,7 @@ def parse_instruction(line):
 def remove_arg_type_prefix(arg):
     if arg is not None:
         # Check if the argument starts with a recognized prefix
-        if arg.startswith("int@") or arg.startswith("bool@") or arg.startswith("string@") or arg.startswith("nil@"):
+        if arg.startswith("int@") or arg.startswith("float@") or arg.startswith("bool@") or arg.startswith("string@") or arg.startswith("nil@"):
             # If it does, remove the prefix and return the remaining part
             return arg.split('@', 1)[-1]
     # If the argument is None or doesn't start with a recognized prefix, return it as is

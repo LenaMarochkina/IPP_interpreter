@@ -7,6 +7,7 @@ use DivisionByZeroError;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
+use IPP\Student\Core\StreamWriter;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
 
@@ -21,13 +22,14 @@ global $MATH_MAP;
 /**
  * Math map
  *
- * @var array{E_INSTRUCTION_NAME: callable(int, int): int} $MATH_MAP
+ * @var array{E_INSTRUCTION_NAME: callable(int|float, int|float): int} $MATH_MAP
  */
 $MATH_MAP = [
-    E_INSTRUCTION_NAME::ADD->value => fn(int $a, int $b) => $a + $b,
-    E_INSTRUCTION_NAME::SUB->value => fn(int $a, int $b) => $a - $b,
-    E_INSTRUCTION_NAME::MUL->value => fn(int $a, int $b) => $a * $b,
+    E_INSTRUCTION_NAME::ADD->value => fn(mixed $a, mixed $b) => $a + $b,
+    E_INSTRUCTION_NAME::SUB->value => fn(mixed $a, mixed $b) => $a - $b,
+    E_INSTRUCTION_NAME::MUL->value => fn(mixed $a, mixed $b) => $a * $b,
     E_INSTRUCTION_NAME::IDIV->value => fn(int $a, int $b) => intval($a / $b),
+    E_INSTRUCTION_NAME::DIV->value => fn(float $a, float $b) => $a / $b,
 ];
 global $RELATIONAL_MAP;
 
@@ -57,6 +59,13 @@ $BOOL_MAP = [
 
 class Interpreter extends AbstractInterpreter
 {
+    /** @var string[] */
+    protected array $longOptions = [
+        "help",
+        "source:",
+        "input:"
+    ];
+
     public Frame $globalFrame;
     public Frame|null $temporaryFrame;
 
@@ -86,12 +95,18 @@ class Interpreter extends AbstractInterpreter
     {
         parent::init();
 
+        $options = getopt("", $this->longOptions, $restIndex);
+        $options = $options ?: [];
+
         $this->globalFrame = new Frame(E_VARIABLE_FRAME::GF);
         $this->localFrameStack = new GenericStack();
         $this->temporaryFrame = null;
 
         $this->callStack = new GenericStack();
         $this->dataStack = new GenericStack();
+
+        $this->stdout = new StreamWriter(STDOUT);
+        $this->stderr = new StreamWriter(STDERR);
     }
 
     /**
@@ -203,14 +218,14 @@ class Interpreter extends AbstractInterpreter
      * Get operand typed value
      *
      * @param Argument|null $argument Argument instance
-     * @return string|int|bool|null Typed value
+     * @return string|float|int|bool|null Typed value
      * @throws FrameAccessException If variable frame is not valid
      * @throws OperandTypeException If argument type is invalid
      * @throws SemanticException If argument is not a variable type
      * @throws VariableAccessException If variable does not exist
      * @throws ValueException If variable does not have value
      */
-    public function getOperandTypedValue(Argument|null $argument): string|int|bool|null
+    public function getOperandTypedValue(Argument|null $argument): string|float|int|bool|null
     {
         if ($argument === null) {
             return null;
@@ -265,10 +280,10 @@ class Interpreter extends AbstractInterpreter
      * Output value to stdout
      *
      * @param E_ARGUMENT_TYPE $type Output value type
-     * @param string|int|bool $value Output value
+     * @param string|float|int|bool|null $value Output value
      * @throws OperandTypeException If value type is not a variable type and cannot be written to output
      */
-    public function runOutput(E_ARGUMENT_TYPE $type, string|int|bool|null $value): void
+    public function runOutput(E_ARGUMENT_TYPE $type, string|float|int|bool|null $value): void
     {
         switch ($type) {
             case E_ARGUMENT_TYPE::INT:
@@ -279,6 +294,9 @@ class Interpreter extends AbstractInterpreter
                 break;
             case E_ARGUMENT_TYPE::BOOL:
                 $this->stdout->writeBool($value == "true");
+                break;
+            case E_ARGUMENT_TYPE::FLOAT:
+                $this->stdout->writeFloat((float)$value);
                 break;
             case E_ARGUMENT_TYPE::NIL:
                 break;
@@ -298,7 +316,7 @@ class Interpreter extends AbstractInterpreter
      * @throws ValueException If variable operands do not have value
      * @throws VariableAccessException If variable does not exist
      */
-    public function runMath(Instruction $instruction): void
+    public function runMath(Instruction $instruction, ?E_ARGUMENT_TYPE $checkType = null): void
     {
         global $MATH_MAP;
         $resultVariableArgument = $instruction->getArgument(0);
@@ -312,16 +330,32 @@ class Interpreter extends AbstractInterpreter
         $leftTypedValue = $this->getOperandTypedValue($leftOperand);
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
-        if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::INT) || !$this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::INT)) {
-            throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of type int");
+        if (!$checkType) {
+            if (
+                !($this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::INT) && $this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::INT)) &&
+                !($this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::FLOAT) && $this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::FLOAT))
+            ) {
+                throw new OperandTypeException("Both {$instruction->getName()->value} instruction operands must be of type int or float");
+            }
+        } else {
+            if (!($this->isOperandTypeOf($leftOperand, $checkType) && $this->isOperandTypeOf($rightOperand, $checkType))) {
+                throw new OperandTypeException("Both {$instruction->getName()->value} instruction operands must be of type $checkType->value");
+            }
         }
 
         $func = $MATH_MAP[$instruction->getName()->value];
         $resultVariable = $this->getArgumentVariable($resultVariableArgument);
 
-        $resultVariable->setType(E_ARGUMENT_TYPE::INT);
+        $resultType = match ($this->getOperandFinalType($leftOperand)) {
+            E_ARGUMENT_TYPE::INT => E_ARGUMENT_TYPE::INT,
+            E_ARGUMENT_TYPE::FLOAT => E_ARGUMENT_TYPE::FLOAT,
+            default => throw new OperandTypeException("Invalid argument type {$this->getOperandFinalType($leftOperand)->value}"),
+        };
+
+        $resultVariable->setType($resultType);
         try {
-            $resultVariable->setValue(strval($func($leftTypedValue, $rightTypedValue)));
+            $resultValue = strval($func($leftTypedValue, $rightTypedValue));
+            $resultVariable->setValue($resultValue);
         } catch (DivisionByZeroError) {
             throw new OperandValueException("Division by zero");
         }

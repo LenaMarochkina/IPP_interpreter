@@ -13,11 +13,11 @@ use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use Override;
 
-class IDIVInstruction implements InstructionInterface
+class DIVInstruction implements InstructionInterface
 {
     /**
-     * Execute IDIV instruction
-     * Divides two operands (as int) and stores the result in the first operand
+     * Execute DIV instruction
+     * Divides two operands (as floats) and stores the result in the first operand
      *
      * @param Interpreter $interpreter Interpreter instance
      * @param Instruction $instruction Instruction instance
@@ -30,6 +30,6 @@ class IDIVInstruction implements InstructionInterface
      */
     #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
-        $interpreter->runMath($instruction, E_ARGUMENT_TYPE::INT);
+        $interpreter->runMath($instruction, E_ARGUMENT_TYPE::FLOAT);
     }
 }

@@ -19,6 +19,7 @@ enum E_INSTRUCTION_NAME: string
     case SUB = 'SUB';
     case MUL = 'MUL';
     case IDIV = 'IDIV';
+    case DIV = 'DIV';
     case LT = 'LT';
     case GT = 'GT';
     case EQ = 'EQ';
@@ -27,6 +28,8 @@ enum E_INSTRUCTION_NAME: string
     case NOT = 'NOT';
     case INT2CHAR = 'INT2CHAR';
     case STRI2INT = 'STRI2INT';
+    case INT2FLOAT = 'INT2FLOAT';
+    case FLOAT2INT = 'FLOAT2INT';
     case READ = 'READ';
     case WRITE = 'WRITE';
     case CONCAT = 'CONCAT';
