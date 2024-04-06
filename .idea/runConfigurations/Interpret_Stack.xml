@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Interpret Stack" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interpret.php" scriptParameters="--source stack.xml">
+    <method v="2">
+      <option name="FwBeforeLaunchTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

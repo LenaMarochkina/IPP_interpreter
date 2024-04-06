@@ -86,7 +86,7 @@ class Value
                 throw new SemanticException("Invalid float value '$value'");
             }
 
-            if (!(($result = FloatHelpers::parseInputFloat($value)) || ($result = floatval($value)))) {
+            if (is_null(($result = FloatHelpers::parseInputFloat($value)) || ($result = floatval($value)))) {
                 throw new SemanticException("Invalid float value '$value'");
             }
 

@@ -60,5 +60,13 @@ class GenericStack
     {
         return $this->isEmpty() ? null : $this->items[count($this->items) - 1];
     }
+
+    /**
+     * Clears the stack.
+     */
+    public function clear(): void
+    {
+        $this->items = [];
+    }
 }
 

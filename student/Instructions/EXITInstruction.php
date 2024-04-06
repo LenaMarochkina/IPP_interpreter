@@ -11,9 +11,8 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class EXITInstruction implements InstructionInterface
+class EXITInstruction extends AbstractInstruction
 {
     /**
      * Execute EXIT instruction
@@ -28,7 +27,7 @@ class EXITInstruction implements InstructionInterface
      * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentSymbol,

@@ -7,6 +7,7 @@ use IPP\Student\Exception\SemanticException;
 use IPP\Student\Instructions\ADDInstruction;
 use IPP\Student\Instructions\ANDInstruction;
 use IPP\Student\Instructions\CALLInstruction;
+use IPP\Student\Instructions\CLEARSInstruction;
 use IPP\Student\Instructions\CONCATInstruction;
 use IPP\Student\Instructions\CREATEFRAMEInstruction;
 use IPP\Student\Instructions\DEFVARInstruction;
@@ -17,7 +18,7 @@ use IPP\Student\Instructions\FLOAT2INTInstruction;
 use IPP\Student\Instructions\GETCHARInstruction;
 use IPP\Student\Instructions\GTInstruction;
 use IPP\Student\Instructions\IDIVInstruction;
-use IPP\Student\Instructions\InstructionInterface;
+use IPP\Student\Instructions\AbstractInstruction;
 use IPP\Student\Instructions\INT2CHARInstruction;
 use IPP\Student\Instructions\INT2FLOATInstruction;
 use IPP\Student\Instructions\JUMPIFEQInstruction;
@@ -50,6 +51,7 @@ global $INSTRUCTIONS;
  * @var BuiltInInstruction[] $INSTRUCTIONS built-in instructions
  */
 $INSTRUCTIONS = [
+    // Memory and function calls
     new BuiltInInstruction(E_INSTRUCTION_NAME::MOVE, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
@@ -64,12 +66,16 @@ $INSTRUCTIONS = [
         [E_ARGUMENT_TYPE::LABEL]
     ], new CALLInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::RETURN, [], new RETURNInstruction()),
+
+    // Data stack
     new BuiltInInstruction(E_INSTRUCTION_NAME::PUSHS, [
-        [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR]
+        [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::VAR, E_ARGUMENT_TYPE::NIL]
     ], new PUSHSInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::POPS, [
         [E_ARGUMENT_TYPE::VAR]
     ], new POPSInstruction()),
+
+    // Math, relations, bool, conversions
     new BuiltInInstruction(E_INSTRUCTION_NAME::ADD, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::VAR],
@@ -141,12 +147,16 @@ $INSTRUCTIONS = [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::VAR],
     ], new FLOAT2INTInstruction()),
+
+    // IO
     new BuiltInInstruction(E_INSTRUCTION_NAME::READ, [
         [E_ARGUMENT_TYPE::VAR], [E_ARGUMENT_TYPE::TYPE]
     ], new READInstruction()),
     new BuiltInInstruction(E_INSTRUCTION_NAME::WRITE, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
     ], new WRITEInstruction()),
+
+    // Strings
     new BuiltInInstruction(E_INSTRUCTION_NAME::CONCAT, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR],
@@ -166,10 +176,14 @@ $INSTRUCTIONS = [
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::VAR]
     ], new SETCHARInstruction()),
+
+    // Types
     new BuiltInInstruction(E_INSTRUCTION_NAME::TYPE, [
         [E_ARGUMENT_TYPE::VAR],
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
     ], new TYPEInstruction()),
+
+    // Flow control
     new BuiltInInstruction(E_INSTRUCTION_NAME::LABEL, [
         [E_ARGUMENT_TYPE::LABEL]
     ], new LABELInstruction()),
@@ -189,10 +203,36 @@ $INSTRUCTIONS = [
     new BuiltInInstruction(E_INSTRUCTION_NAME::EXIT, [
         [E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::VAR]
     ], new EXITInstruction()),
+
+    // Debug
     new BuiltInInstruction(E_INSTRUCTION_NAME::DPRINT, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
     ]),
     new BuiltInInstruction(E_INSTRUCTION_NAME::BREAK, []),
+
+    // Stack
+    new BuiltInInstruction(E_INSTRUCTION_NAME::CLEARS, [], new CLEARSInstruction()),
+
+    // Stack - math, relations, bool, conversions
+    new BuiltInInstruction(E_INSTRUCTION_NAME::ADDS, [], new ADDInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::SUBS, [], new SUBInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::MULS, [], new MULInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::IDIVS, [], new IDIVInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::DIVS, [], new DIVInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::LTS, [], new LTInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::GTS, [], new GTInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::EQS, [], new EQInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::ANDS, [], new ANDInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::ORS, [], new ORInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::NOTS, [], new NOTInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::INT2CHARS, [], new INT2CHARInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::STRI2INTS, [], new STRI2INTInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::INT2FLOATS, [], new INT2FLOATInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::FLOAT2INTS, [], new FLOAT2INTInstruction(true)),
+
+    // Stack - flow control
+    new BuiltInInstruction(E_INSTRUCTION_NAME::JUMPIFEQS, [[E_ARGUMENT_TYPE::LABEL]], new JUMPIFEQInstruction(true)),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::JUMPIFNEQS, [[E_ARGUMENT_TYPE::LABEL]], new JUMPIFNEQInstruction(true)),
 ];
 
 class BuiltInInstruction
@@ -209,14 +249,14 @@ class BuiltInInstruction
      */
     private array $args;
 
-    /** @var InstructionInterface|null instruction to execute */
-    private ?InstructionInterface $instruction;
+    /** @var AbstractInstruction|null instruction to execute */
+    private ?AbstractInstruction $instruction;
 
     /**
      * @param E_INSTRUCTION_NAME $name name of the instruction
      * @param E_ARGUMENT_TYPE[][] $args types of arguments
      */
-    public function __construct(E_INSTRUCTION_NAME $name, array $args, ?InstructionInterface $instruction = null)
+    public function __construct(E_INSTRUCTION_NAME $name, array $args, ?AbstractInstruction $instruction = null)
     {
         $this->name = $name;
         $this->args = $args;
@@ -275,10 +315,15 @@ class BuiltInInstruction
     /**
      * Get instruction to execute.
      *
-     * @return InstructionInterface|null instruction to execute
+     * @return AbstractInstruction|null instruction to execute
      */
-    public function getExecutionInstruction(): ?InstructionInterface
+    public function getExecutionInstruction(): ?AbstractInstruction
     {
         return $this->instruction;
+    }
+
+    public function getIsStackInstruction(): bool
+    {
+        return $this->getExecutionInstruction()->getIsStackInstruction();
     }
 }

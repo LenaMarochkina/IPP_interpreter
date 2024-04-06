@@ -4,6 +4,7 @@ namespace IPP\Student;
 
 use DivisionByZeroError;
 
+use Exception;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
@@ -26,10 +27,15 @@ global $MATH_MAP;
  */
 $MATH_MAP = [
     E_INSTRUCTION_NAME::ADD->value => fn(mixed $a, mixed $b) => $a + $b,
+    E_INSTRUCTION_NAME::ADDS->value => fn(mixed $a, mixed $b) => $a + $b,
     E_INSTRUCTION_NAME::SUB->value => fn(mixed $a, mixed $b) => $a - $b,
+    E_INSTRUCTION_NAME::SUBS->value => fn(mixed $a, mixed $b) => $a - $b,
     E_INSTRUCTION_NAME::MUL->value => fn(mixed $a, mixed $b) => $a * $b,
+    E_INSTRUCTION_NAME::MULS->value => fn(mixed $a, mixed $b) => $a * $b,
     E_INSTRUCTION_NAME::IDIV->value => fn(int $a, int $b) => intval($a / $b),
+    E_INSTRUCTION_NAME::IDIVS->value => fn(int $a, int $b) => intval($a / $b),
     E_INSTRUCTION_NAME::DIV->value => fn(float $a, float $b) => $a / $b,
+    E_INSTRUCTION_NAME::DIVS->value => fn(float $a, float $b) => $a / $b,
 ];
 global $RELATIONAL_MAP;
 
@@ -40,8 +46,11 @@ global $RELATIONAL_MAP;
  */
 $RELATIONAL_MAP = [
     E_INSTRUCTION_NAME::LT->value => fn(mixed $a, mixed $b) => $a < $b,
+    E_INSTRUCTION_NAME::LTS->value => fn(mixed $a, mixed $b) => $a < $b,
     E_INSTRUCTION_NAME::GT->value => fn(mixed $a, mixed $b) => $a > $b,
+    E_INSTRUCTION_NAME::GTS->value => fn(mixed $a, mixed $b) => $a > $b,
     E_INSTRUCTION_NAME::EQ->value => fn(mixed $a, mixed $b) => $a === $b,
+    E_INSTRUCTION_NAME::EQS->value => fn(mixed $a, mixed $b) => $a === $b,
 ];
 
 global $BOOL_MAP;
@@ -53,8 +62,11 @@ global $BOOL_MAP;
  */
 $BOOL_MAP = [
     E_INSTRUCTION_NAME::AND->value => fn(bool $a, bool $b) => $a && $b,
+    E_INSTRUCTION_NAME::ANDS->value => fn(bool $a, bool $b) => $a && $b,
     E_INSTRUCTION_NAME::OR->value => fn(bool $a, bool $b) => $a || $b,
+    E_INSTRUCTION_NAME::ORS->value => fn(bool $a, bool $b) => $a || $b,
     E_INSTRUCTION_NAME::NOT->value => fn(bool $a) => !$a,
+    E_INSTRUCTION_NAME::NOTS->value => fn(bool $a) => !$a,
 ];
 
 class Interpreter extends AbstractInterpreter
@@ -85,7 +97,7 @@ class Interpreter extends AbstractInterpreter
     public GenericStack $callStack;
 
     /**
-     * @var GenericStack<int|string|bool|null> $dataStack Data stack
+     * @var GenericStack<Argument> $dataStack Data stack
      */
     public GenericStack $dataStack;
 
@@ -315,15 +327,18 @@ class Interpreter extends AbstractInterpreter
      * @throws SemanticException If result variable is not a variable type
      * @throws ValueException If variable operands do not have value
      * @throws VariableAccessException If variable does not exist
+     * @throws Exception If some other error occurs
      */
     public function runMath(Instruction $instruction, ?E_ARGUMENT_TYPE $checkType = null): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         global $MATH_MAP;
         $resultVariableArgument = $instruction->getArgument(0);
-        $leftOperand = $instruction->getArgument(1);
-        $rightOperand = $instruction->getArgument(2);
+        $rightOperand = !$isFromStack ? $instruction->getArgument(2) : $this->dataStack->pop();
+        $leftOperand = !$isFromStack ? $instruction->getArgument(1) : $this->dataStack->pop();
 
-        if ($resultVariableArgument === null || $leftOperand === null || $rightOperand === null) {
+        if ((!$isFromStack && $resultVariableArgument === null) || $leftOperand === null || $rightOperand === null) {
             throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
         }
 
@@ -344,7 +359,6 @@ class Interpreter extends AbstractInterpreter
         }
 
         $func = $MATH_MAP[$instruction->getName()->value];
-        $resultVariable = $this->getArgumentVariable($resultVariableArgument);
 
         $resultType = match ($this->getOperandFinalType($leftOperand)) {
             E_ARGUMENT_TYPE::INT => E_ARGUMENT_TYPE::INT,
@@ -352,10 +366,18 @@ class Interpreter extends AbstractInterpreter
             default => throw new OperandTypeException("Invalid argument type {$this->getOperandFinalType($leftOperand)->value}"),
         };
 
-        $resultVariable->setType($resultType);
         try {
-            $resultValue = strval($func($leftTypedValue, $rightTypedValue));
-            $resultVariable->setValue($resultValue);
+            $resultValue = Value::getTypedValueString($resultType, $func($leftTypedValue, $rightTypedValue));
+
+            if (!$isFromStack) {
+                $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+
+                $resultVariable->setType($resultType);
+                $resultVariable->setValue($resultValue);
+            } else {
+                $stackValue = new Argument($resultValue, $resultType);
+                $this->dataStack->push($stackValue);
+            }
         } catch (DivisionByZeroError) {
             throw new OperandValueException("Division by zero");
         }
@@ -373,12 +395,14 @@ class Interpreter extends AbstractInterpreter
      */
     public function runRelational(Instruction $instruction): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         global $RELATIONAL_MAP;
         $resultVariableArgument = $instruction->getArgument(0);
-        $leftOperand = $instruction->getArgument(1);
-        $rightOperand = $instruction->getArgument(2);
+        $rightOperand = !$isFromStack ? $instruction->getArgument(2) : $this->dataStack->pop();
+        $leftOperand = !$isFromStack ? $instruction->getArgument(1) : $this->dataStack->pop();
 
-        if ($resultVariableArgument === null || $leftOperand === null || $rightOperand === null) {
+        if ((!$isFromStack && $resultVariableArgument === null) || $leftOperand === null || $rightOperand === null) {
             throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
         }
 
@@ -401,10 +425,17 @@ class Interpreter extends AbstractInterpreter
         }
 
         $func = $RELATIONAL_MAP[$instruction->getName()->value];
-        $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+        $resultValue = $func($leftTypedValue, $rightTypedValue) ? "true" : "false";
 
-        $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
-        $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
+        if (!$isFromStack) {
+            $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+
+            $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
+            $resultVariable->setValue($resultValue);
+        } else {
+            $stackValue = new Argument($resultValue, E_ARGUMENT_TYPE::BOOL);
+            $this->dataStack->push($stackValue);
+        }
     }
 
     /**
@@ -419,18 +450,26 @@ class Interpreter extends AbstractInterpreter
      */
     public function runBool(Instruction $instruction): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         global $BOOL_MAP;
         $resultVariableArgument = $instruction->getArgument(0);
-        $leftOperand = $instruction->getArgument(1);
-        $rightOperand = $instruction->getArgument(2);
+        $rightOperand = !$isFromStack
+            ? $instruction->getArgument(2)
+            : (
+            $instruction->getName() !== E_INSTRUCTION_NAME::NOTS
+                ? $this->dataStack->pop()
+                : null
+            );
+        $leftOperand = !$isFromStack ? $instruction->getArgument(1) : $this->dataStack->pop();
 
-        if ($resultVariableArgument === null || $leftOperand === null) {
+        if ((!$isFromStack && $resultVariableArgument === null) || $leftOperand === null) {
             throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
         }
 
-        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
+        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT || $instruction->getName() === E_INSTRUCTION_NAME::NOTS) {
             if ($rightOperand !== null) {
-                throw new SemanticException("Invalid number of arguments for NOT instruction");
+                throw new SemanticException("Invalid number of arguments for {$instruction->getName()->value} instruction");
             }
         } else {
             if ($rightOperand === null) {
@@ -441,9 +480,9 @@ class Interpreter extends AbstractInterpreter
         $leftTypedValue = $this->getOperandTypedValue($leftOperand);
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
-        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT) {
+        if ($instruction->getName() === E_INSTRUCTION_NAME::NOT || $instruction->getName() === E_INSTRUCTION_NAME::NOTS) {
             if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::BOOL)) {
-                throw new OperandTypeException("NOT instruction operand must be of type bool");
+                throw new OperandTypeException("{$instruction->getName()->value} instruction operand must be of type bool");
             }
         } else {
             if (!$this->isOperandTypeOf($leftOperand, E_ARGUMENT_TYPE::BOOL) || !$this->isOperandTypeOf($rightOperand, E_ARGUMENT_TYPE::BOOL)) {
@@ -452,10 +491,17 @@ class Interpreter extends AbstractInterpreter
         }
 
         $func = $BOOL_MAP[$instruction->getName()->value];
-        $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+        $resultValue = $func($leftTypedValue, $rightTypedValue) ? "true" : "false";
 
-        $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
-        $resultVariable->setValue($func($leftTypedValue, $rightTypedValue) ? "true" : "false");
+        if (!$isFromStack) {
+            $resultVariable = $this->getArgumentVariable($resultVariableArgument);
+
+            $resultVariable->setType(E_ARGUMENT_TYPE::BOOL);
+            $resultVariable->setValue($resultValue);
+        } else {
+            $stackValue = new Argument($resultValue, E_ARGUMENT_TYPE::BOOL);
+            $this->dataStack->push($stackValue);
+        }
     }
 
     /**

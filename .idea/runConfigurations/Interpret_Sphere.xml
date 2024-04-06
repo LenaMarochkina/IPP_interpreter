@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Interpret Sphere" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interpret.php" scriptParameters="--source sphere.xml">
+    <method v="2">
+      <option name="FwBeforeLaunchTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

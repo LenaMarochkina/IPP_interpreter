@@ -6,9 +6,8 @@ use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class CALLInstruction implements InstructionInterface
+class CALLInstruction extends AbstractInstruction
 {
     /**
      * Execute CALL instruction
@@ -18,7 +17,7 @@ class CALLInstruction implements InstructionInterface
      * @param Instruction $instruction Instruction instance
      * @throws SemanticException If some semantic error occurs
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentLabel,

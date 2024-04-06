@@ -16,10 +16,16 @@ class Instruction
      * @var Argument[] array of instruction arguments
      */
     private array $_arguments;
+
     /**
      * @var int order of the instruction
      */
     private int $_order;
+
+    /**
+     * @var BuiltInInstruction built-in instruction
+     */
+    private BuiltInInstruction $builtInInstruction;
 
     /**
      * @param E_INSTRUCTION_NAME $name instruction name
@@ -34,8 +40,8 @@ class Instruction
         $this->_arguments = $arguments;
         $this->_order = $order;
 
-        $builtInInstruction = BuiltInInstruction::getInstruction($name);
-        $builtInInstruction->validateArgs($arguments);
+        $this->builtInInstruction = BuiltInInstruction::getInstruction($name);
+        $this->builtInInstruction->validateArgs($arguments);
     }
 
     /**
@@ -69,5 +75,10 @@ class Instruction
     public function getOrder(): int
     {
         return $this->_order;
+    }
+
+    public function getIsStackInstruction(): bool
+    {
+        return $this->builtInInstruction->getIsStackInstruction();
     }
 }

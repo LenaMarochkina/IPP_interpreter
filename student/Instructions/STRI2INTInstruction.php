@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Student\Argument;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
@@ -11,9 +12,10 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
+use IPP\Student\Value;
+use PhpParser\Node\Arg;
 
-class STRI2INTInstruction implements InstructionInterface
+class STRI2INTInstruction extends AbstractInstruction
 {
     /**
      * Execute STRI2INT instruction
@@ -28,40 +30,49 @@ class STRI2INTInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         [
             $argumentVariable,
+            $argumentIndex,
             $argumentString,
-            $argumentIndex
         ] = [
             $instruction->getArgument(0),
-            $instruction->getArgument(1),
-            $instruction->getArgument(2),
+            !$isFromStack ? $instruction->getArgument(2) : $interpreter->dataStack->pop(),
+            !$isFromStack ? $instruction->getArgument(1) : $interpreter->dataStack->pop(),
         ];
 
-        if ($argumentVariable === null || $argumentString === null || $argumentIndex === null) {
-            throw new SemanticException("Invalid STRI2INT instruction");
+        if ((!$isFromStack && $argumentVariable === null) || $argumentString === null || $argumentIndex === null) {
+            throw new SemanticException("Invalid {$instruction->getName()->value} instruction");
         }
 
         $argumentStringValue = $interpreter->getOperandTypedValue($argumentString);
         $argumentIndexValue = $interpreter->getOperandTypedValue($argumentIndex);
 
         if (!$interpreter->isOperandTypeOf($argumentString, E_ARGUMENT_TYPE::STRING)) {
-            throw new OperandTypeException("STRI2INT instruction first operand must be of type string");
+            throw new OperandTypeException("{$instruction->getName()->value} instruction first operand must be of type string");
         }
 
         if (!$interpreter->isOperandTypeOf($argumentIndex, E_ARGUMENT_TYPE::INT)) {
-            throw new OperandTypeException("STRI2INT instruction second operand must be of type int");
+            throw new OperandTypeException("{$instruction->getName()->value} instruction second operand must be of type int");
         }
 
         if (!is_string($argumentStringValue) || $argumentIndexValue < 0 || $argumentIndexValue >= mb_strlen($argumentStringValue)) {
-            throw new StringOperationException("STRI2INT instruction index out of bounds: $argumentIndexValue");
+            throw new StringOperationException("{$instruction->getName()->value} instruction index out of bounds: $argumentIndexValue");
         }
 
         $charCode = mb_ord($argumentStringValue[$argumentIndexValue]);
 
-        $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
-        $interpreter->getArgumentVariable($argumentVariable)->setValue(strval($charCode));
+        if (!$isFromStack) {
+            $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
+            $interpreter->getArgumentVariable($argumentVariable)->setValue(strval($charCode));
+        } else {
+            $interpreter->dataStack->push(new Argument(
+                Value::getTypedValueString(E_ARGUMENT_TYPE::INT, $charCode),
+                E_ARGUMENT_TYPE::INT
+            ));
+        }
     }
 }

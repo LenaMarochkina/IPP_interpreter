@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Student\Argument;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
@@ -11,9 +12,8 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class INT2CHARInstruction implements InstructionInterface
+class INT2CHARInstruction extends AbstractInstruction
 {
     /**
      * Execute INT2CHAR instruction
@@ -28,31 +28,43 @@ class INT2CHARInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
-        [$argumentVariable, $argumentNumber] = [$instruction->getArgument(0), $instruction->getArgument(1)];
+        $isFromStack = $instruction->getIsStackInstruction();
 
-        if ($argumentVariable === null || $argumentNumber === null) {
-            throw new SemanticException("Invalid INT2CHAR instruction");
+        [
+            $argumentVariable,
+            $argumentNumber,
+        ] = [
+            $instruction->getArgument(0),
+            !$isFromStack ? $instruction->getArgument(1) : $interpreter->dataStack->pop(),
+        ];
+
+        if ((!$isFromStack && $argumentVariable === null) || $argumentNumber === null) {
+            throw new SemanticException("Invalid {$instruction->getName()->value} instruction");
         }
 
         $argumentNumberValue = $interpreter->getOperandTypedValue($argumentNumber);
 
         if (!$interpreter->isOperandTypeOf($argumentNumber, E_ARGUMENT_TYPE::INT)) {
-            throw new OperandTypeException("INT2CHAR instruction operand must be of type int");
+            throw new OperandTypeException("{$instruction->getName()->value} instruction operand must be of type int");
         }
 
         if (!is_int($argumentNumberValue)) {
-            throw new ValueException("INT2CHAR instruction operand must be a number");
+            throw new ValueException("{$instruction->getName()->value} instruction operand must be a number");
         }
 
         $value = mb_chr($argumentNumberValue);
 
         if (!$value) {
-            throw new StringOperationException("INT2CHAR instruction value out of bounds: $argumentNumberValue");
+            throw new StringOperationException("{$instruction->getName()->value} instruction value out of bounds: $argumentNumberValue");
         }
 
-        $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
-        $interpreter->getArgumentVariable($argumentVariable)->setValue($value);
+        if (!$isFromStack) {
+            $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::STRING);
+            $interpreter->getArgumentVariable($argumentVariable)->setValue($value);
+        } else {
+            $interpreter->dataStack->push(new Argument($value, E_ARGUMENT_TYPE::STRING));
+        }
     }
 }

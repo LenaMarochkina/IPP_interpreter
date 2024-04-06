@@ -11,9 +11,8 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class IDIVInstruction implements InstructionInterface
+class IDIVInstruction extends AbstractInstruction
 {
     /**
      * Execute IDIV instruction
@@ -28,7 +27,7 @@ class IDIVInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $interpreter->runMath($instruction, E_ARGUMENT_TYPE::INT);
     }

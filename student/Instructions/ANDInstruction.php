@@ -9,9 +9,8 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class ANDInstruction implements InstructionInterface
+class ANDInstruction extends AbstractInstruction
 {
     /**
      * Execute AND instruction
@@ -25,7 +24,7 @@ class ANDInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $interpreter->runBool($instruction);
     }

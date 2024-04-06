@@ -10,9 +10,8 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class JUMPIFEQInstruction implements InstructionInterface
+class JUMPIFEQInstruction extends AbstractInstruction
 {
     /**
      * Execute JUMPIFEQ instruction
@@ -26,26 +25,28 @@ class JUMPIFEQInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         [
             $argumentLabel,
-            $argumentLeftSymbol,
             $argumentRightSymbol,
+            $argumentLeftSymbol,
         ] = [
             $instruction->getArgument(0),
-            $instruction->getArgument(1),
-            $instruction->getArgument(2),
+            !$isFromStack ? $instruction->getArgument(2) : $interpreter->dataStack->pop(),
+            !$isFromStack ? $instruction->getArgument(1) : $interpreter->dataStack->pop(),
         ];
 
         if ($argumentLabel === null || $argumentLeftSymbol === null || $argumentRightSymbol === null) {
-            throw new SemanticException("Invalid JUMPIFEQ instruction");
+            throw new SemanticException("Invalid {$instruction->getName()->value} instruction");
         }
 
         $labelValue = $argumentLabel->getValue()->getTypedValue(E_ARGUMENT_TYPE::STRING);
 
         if (!is_string($labelValue))
-            throw new ValueException("JUMPIFEQ instruction label must be a string");
+            throw new ValueException("{$instruction->getName()->value} instruction label must be a string");
 
         if (!array_key_exists($labelValue, $interpreter->labels))
             throw new SemanticException("Unknown label $labelValue");
@@ -56,7 +57,7 @@ class JUMPIFEQInstruction implements InstructionInterface
         $rightSymbolType = $interpreter->getOperandFinalType($argumentRightSymbol);
 
         if (!($interpreter->isOperandSameType($argumentLeftSymbol, $argumentRightSymbol) || $leftSymbolType === E_ARGUMENT_TYPE::NIL || $rightSymbolType === E_ARGUMENT_TYPE::NIL)) {
-            throw new OperandTypeException("JUMPIFEQ instruction operands must be of the same type or one of them must be nil");
+            throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of the same type or one of them must be nil");
         }
 
         if ($leftSymbolValue === $rightSymbolValue)

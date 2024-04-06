@@ -5,9 +5,8 @@ namespace IPP\Student\Instructions;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class PUSHFRAMEInstruction implements InstructionInterface
+class PUSHFRAMEInstruction extends AbstractInstruction
 {
     /**
      * Execute PUSHFRAME instruction
@@ -17,7 +16,7 @@ class PUSHFRAMEInstruction implements InstructionInterface
      * @param Instruction $instruction Instruction instance
      * @throws FrameAccessException If temporary frame does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
 
         if ($interpreter->temporaryFrame === null) {

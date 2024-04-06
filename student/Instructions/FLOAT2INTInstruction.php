@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Student\Argument;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
@@ -11,9 +12,9 @@ use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
+use IPP\Student\Value;
 
-class FLOAT2INTInstruction implements InstructionInterface
+class FLOAT2INTInstruction extends AbstractInstruction
 {
     /**
      * Execute FLOAT2INT instruction
@@ -27,27 +28,36 @@ class FLOAT2INTInstruction implements InstructionInterface
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
+        $isFromStack = $instruction->getIsStackInstruction();
+
         [
             $argumentVariable,
             $argumentInteger,
         ] = [
             $instruction->getArgument(0),
-            $instruction->getArgument(1),
+            !$isFromStack ? $instruction->getArgument(1) : $interpreter->dataStack->pop(),
         ];
 
-        if ($argumentVariable === null || $argumentInteger === null) {
-            throw new SemanticException("Invalid FLOAT2INT instruction arguments");
+        if ((!$isFromStack && $argumentVariable === null) || $argumentInteger === null) {
+            throw new SemanticException("Invalid {$instruction->getName()->value} instruction arguments");
         }
 
         $argumentIntegerValue = $interpreter->getOperandTypedValue($argumentInteger);
 
         if (!$interpreter->isOperandTypeOf($argumentInteger, E_ARGUMENT_TYPE::FLOAT)) {
-            throw new OperandTypeException("FLOAT2INT instruction second operand must be of type float");
+            throw new OperandTypeException("{$instruction->getName()->value} instruction second operand must be of type float");
         }
 
-        $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
-        $interpreter->getArgumentVariable($argumentVariable)->setValue(floor($argumentIntegerValue));
+        if (!$isFromStack) {
+            $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
+            $interpreter->getArgumentVariable($argumentVariable)->setValue(floor($argumentIntegerValue));
+        } else {
+            $interpreter->dataStack->push(new Argument(
+                Value::getTypedValueString(E_ARGUMENT_TYPE::INT, $argumentIntegerValue),
+                E_ARGUMENT_TYPE::INT
+            ));
+        }
     }
 }

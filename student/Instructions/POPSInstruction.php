@@ -10,9 +10,8 @@ use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use IPP\Student\Value;
-use Override;
 
-class POPSInstruction implements InstructionInterface
+class POPSInstruction extends AbstractInstruction
 {
     /**
      * Execute POPS instruction
@@ -26,7 +25,7 @@ class POPSInstruction implements InstructionInterface
      * @throws VariableAccessException If some variable does not exist
      * @throws Exception If some stack error occurs
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $argument = $instruction->getArgument(0);
 
@@ -38,13 +37,14 @@ class POPSInstruction implements InstructionInterface
             throw new ValueException("Data stack is empty");
         }
 
-        $value = $interpreter->dataStack->pop();
-        $detectedType = Value::determineValueType($value);
+        $argumentValue = $interpreter->dataStack->pop();
+        $type = $argumentValue->getType();
+        $value = $argumentValue->getTypedValue();
 
         $argumentVariable = $interpreter->getArgumentVariable($argument);
 
         $argumentVariable->setDefined(true);
-        $argumentVariable->setType($detectedType);
-        $argumentVariable->setValue(Value::getTypedValueString($detectedType, $value));
+        $argumentVariable->setType($type);
+        $argumentVariable->setValue(Value::getTypedValueString($type, $value));
     }
 }

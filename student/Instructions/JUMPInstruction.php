@@ -7,9 +7,8 @@ use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class JUMPInstruction implements InstructionInterface
+class JUMPInstruction extends AbstractInstruction
 {
     /**
      * Execute JUMP instruction
@@ -20,7 +19,7 @@ class JUMPInstruction implements InstructionInterface
      * @throws SemanticException If some semantic error occurs
      * @throws ValueException If some value is wrong
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentLabel,

@@ -10,9 +10,8 @@ use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use IPP\Student\Value;
-use Override;
 
-class READInstruction implements InstructionInterface
+class READInstruction extends AbstractInstruction
 {
     /**
      * Execute READ instruction
@@ -25,7 +24,7 @@ class READInstruction implements InstructionInterface
      * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentVariable,

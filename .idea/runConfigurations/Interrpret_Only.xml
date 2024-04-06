@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Interrpret Only" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interpret.php" scriptParameters="--source source3.xml --input input.txt">
+    <method v="2" />
+  </configuration>
+</component>

@@ -6,9 +6,8 @@ use Exception;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class RETURNInstruction implements InstructionInterface
+class RETURNInstruction extends AbstractInstruction
 {
     /**
      * Execute RETURN instruction
@@ -19,7 +18,7 @@ class RETURNInstruction implements InstructionInterface
      * @throws ValueException If call stack is empty
      * @throws Exception If instruction counter is not set
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         if ($interpreter->callStack->isEmpty()) {
             throw new ValueException("Call stack is empty");

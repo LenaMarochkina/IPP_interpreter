@@ -6,9 +6,8 @@ use Exception;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class POPFRAMEInstruction implements InstructionInterface
+class POPFRAMEInstruction extends AbstractInstruction
 {
     /**
      * Execute POPFRAME instruction
@@ -19,7 +18,7 @@ class POPFRAMEInstruction implements InstructionInterface
      * @throws FrameAccessException If local frame does not exist
      * @throws Exception If some error occurs
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         if ($interpreter->localFrameStack->isEmpty()) {
             throw new FrameAccessException("Local frame does not exist");

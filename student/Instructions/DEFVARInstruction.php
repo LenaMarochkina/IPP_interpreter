@@ -7,9 +7,8 @@ use IPP\Student\Exception\SemanticException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
 use IPP\Student\Variable;
-use Override;
 
-class DEFVARInstruction implements InstructionInterface
+class DEFVARInstruction extends AbstractInstruction
 {
     /**
      * Execute DEFVAR instruction
@@ -20,7 +19,7 @@ class DEFVARInstruction implements InstructionInterface
      * @throws FrameAccessException If the variable frame does not exist
      * @throws SemanticException If some semantic error occurs
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         $argument = $instruction->getArgument(0);
 

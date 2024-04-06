@@ -4,11 +4,10 @@ namespace IPP\Student\Instructions;
 
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class LABELInstruction implements InstructionInterface
+class LABELInstruction extends AbstractInstruction
 {
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         // Ignored because labels are processed before the instructions
     }

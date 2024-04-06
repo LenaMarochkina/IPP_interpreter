@@ -8,9 +8,8 @@ use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
-use Override;
 
-class TYPEInstruction implements InstructionInterface
+class TYPEInstruction extends AbstractInstruction
 {
     /**
      * Execute TYPE instruction
@@ -22,7 +21,7 @@ class TYPEInstruction implements InstructionInterface
      * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist
      */
-    #[Override] public function execute(Interpreter $interpreter, Instruction $instruction): void
+    public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
         [
             $argumentVariable,
