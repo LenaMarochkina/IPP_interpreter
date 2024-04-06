@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use Exception;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
@@ -24,6 +25,7 @@ class JUMPIFNEQInstruction extends AbstractInstruction
      * @throws SemanticException If some semantic error occurs
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
+     * @throws Exception If some error occurs
      */
     public function execute(Interpreter $interpreter, Instruction $instruction): void
     {

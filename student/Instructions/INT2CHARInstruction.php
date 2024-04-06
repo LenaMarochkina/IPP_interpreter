@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use Exception;
 use IPP\Student\Argument;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
@@ -27,6 +28,7 @@ class INT2CHARInstruction extends AbstractInstruction
      * @throws SemanticException If some semantic error occurs
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
+     * @throws Exception If an error occurs
      */
     public function execute(Interpreter $interpreter, Instruction $instruction): void
     {

@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<program language="IPPcode24">
+  <instruction order="1" opcode="DEFVAR">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="2" opcode="DEFVAR">
+    <arg1 type="var">GF@twoPointHalf</arg1>
+  </instruction>
+  <instruction order="3" opcode="DEFVAR">
+    <arg1 type="var">GF@fivePointFour</arg1>
+  </instruction>
+  <instruction order="4" opcode="DEFVAR">
+    <arg1 type="var">GF@oneFourth</arg1>
+  </instruction>
+  <instruction order="5" opcode="DEFVAR">
+    <arg1 type="var">GF@one</arg1>
+  </instruction>
+  <instruction order="6" opcode="READ">
+    <arg1 type="var">GF@twoPointHalf</arg1>
+    <arg2 type="type">float</arg2>
+  </instruction>
+  <instruction order="7" opcode="READ">
+    <arg1 type="var">GF@fivePointFour</arg1>
+    <arg2 type="type">float</arg2>
+  </instruction>
+  <instruction order="8" opcode="READ">
+    <arg1 type="var">GF@oneFourth</arg1>
+    <arg2 type="type">float</arg2>
+  </instruction>
+  <instruction order="9" opcode="READ">
+    <arg1 type="var">GF@one</arg1>
+    <arg2 type="type">float</arg2>
+  </instruction>
+  <instruction order="10" opcode="MUL">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@twoPointHalf</arg2>
+    <arg3 type="float">4.0</arg3>
+  </instruction>
+  <instruction order="11" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="12" opcode="WRITE">
+    <arg1 type="string">\032-\032</arg1>
+  </instruction>
+  <instruction order="13" opcode="FLOAT2INT">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@result</arg2>
+  </instruction>
+  <instruction order="14" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="15" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="16" opcode="PUSHS">
+    <arg1 type="var">GF@fivePointFour</arg1>
+  </instruction>
+  <instruction order="17" opcode="PUSHS">
+    <arg1 type="float">4.0</arg1>
+  </instruction>
+  <instruction order="18" opcode="MULS" />
+  <instruction order="19" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="20" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="21" opcode="WRITE">
+    <arg1 type="string">\032-\032</arg1>
+  </instruction>
+  <instruction order="22" opcode="PUSHS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="23" opcode="FLOAT2INTS" />
+  <instruction order="24" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="25" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="26" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="27" opcode="ADD">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@oneFourth</arg2>
+    <arg3 type="float">4.0</arg3>
+  </instruction>
+  <instruction order="28" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="29" opcode="WRITE">
+    <arg1 type="string">\032-\032</arg1>
+  </instruction>
+  <instruction order="30" opcode="FLOAT2INT">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@result</arg2>
+  </instruction>
+  <instruction order="31" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="32" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="33" opcode="DIV">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@one</arg2>
+    <arg3 type="float">4.0</arg3>
+  </instruction>
+  <instruction order="34" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="35" opcode="WRITE">
+    <arg1 type="string">\032-\032</arg1>
+  </instruction>
+  <instruction order="36" opcode="FLOAT2INT">
+    <arg1 type="var">GF@result</arg1>
+    <arg2 type="var">GF@result</arg2>
+  </instruction>
+  <instruction order="37" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="38" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+</program>

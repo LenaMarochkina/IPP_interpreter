@@ -1,0 +1,45 @@
+.IPPcode24
+DEFVAR GF@result
+
+DEFVAR GF@twoPointHalf
+DEFVAR GF@fivePointFour
+DEFVAR GF@oneFourth
+DEFVAR GF@one
+
+READ GF@twoPointHalf float
+READ GF@fivePointFour float
+READ GF@oneFourth float
+READ GF@one float
+
+MUL GF@result GF@twoPointHalf float@4.0
+WRITE GF@result                             # 10.0
+WRITE string@\032-\032
+FLOAT2INT GF@result GF@result
+WRITE GF@result
+WRITE string@\010
+
+PUSHS GF@fivePointFour
+PUSHS float@4.0
+MULS
+POPS GF@result
+WRITE GF@result                             # 21.6
+WRITE string@\032-\032
+PUSHS GF@result
+FLOAT2INTS
+POPS GF@result
+WRITE GF@result
+WRITE string@\010
+
+ADD GF@result GF@oneFourth float@4.0
+WRITE GF@result                             # 4.25
+WRITE string@\032-\032
+FLOAT2INT GF@result GF@result
+WRITE GF@result
+WRITE string@\010
+
+DIV GF@result GF@one float@4.0
+WRITE GF@result                             # 0.25
+WRITE string@\032-\032
+FLOAT2INT GF@result GF@result
+WRITE GF@result
+WRITE string@\010

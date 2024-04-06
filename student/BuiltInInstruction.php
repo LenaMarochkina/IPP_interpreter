@@ -322,6 +322,11 @@ class BuiltInInstruction
         return $this->instruction;
     }
 
+    /**
+     * Check if instruction is stack instruction.
+     *
+     * @return bool true if instruction is stack instruction, false otherwise
+     */
     public function getIsStackInstruction(): bool
     {
         return $this->getExecutionInstruction()->getIsStackInstruction();

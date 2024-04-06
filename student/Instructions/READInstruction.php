@@ -42,6 +42,7 @@ class READInstruction extends AbstractInstruction
             "int" => $interpreter->getInput()->readInt(),
             "string" => $interpreter->getInput()->readString(),
             "bool" => $interpreter->getInput()->readBool(),
+            "float" => $interpreter->getInput()->readFloat(),
             default => throw new OperandTypeException("Invalid argument type for READ instruction"),
         };
         $detectedType = Value::determineValueType($input);

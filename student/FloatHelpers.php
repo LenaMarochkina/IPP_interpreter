@@ -4,6 +4,12 @@ namespace IPP\Student;
 
 class FloatHelpers
 {
+    /**
+     * Converts a hexadecimal number string to a float number
+     *
+     * @param string $hex Hexadecimal number string
+     * @return float Parsed float number
+     */
     public static function hexdecf(string $hex): float
     {
         $exploded = explode('.', $hex);
@@ -14,25 +20,12 @@ class FloatHelpers
         return $integer_value + $fractional_value;
     }
 
-    public static function dechexf(string $decimal): string
-    {
-        [$integer_part, $fractional_part] = explode('.', $decimal);
-        $integer_value = dechex(intval($integer_part));
-        $fractional_value = '';
-        $fractional_part = floatval('0.' . $fractional_part);
-
-        for ($i = 0; $i < 13; $i++) {
-            $fractional_part *= 16;
-            $integer = intval($fractional_part);
-            $fractional_value .= dechex($integer);
-            $fractional_part -= $integer;
-        }
-
-        $fractional_value = rtrim($fractional_value, '0');
-
-        return $integer_value . '.' . $fractional_value;
-    }
-
+    /**
+     * Parses a string input to a float number
+     *
+     * @param string|null $value Input string
+     * @return float|null Parsed float number or null if the input is not a valid float number
+     */
     public static function parseInputFloat(?string $value): ?float
     {
         $matches = [];
@@ -54,22 +47,6 @@ class FloatHelpers
         $decimal_value = self::hexdecf($base);
 
         return ($decimal_value * pow(2, intval($power))) * ($sign === '-' ? -1 : 1);
-    }
-
-    public static function floatToBinaryParts(float $number): array
-    {
-        $binary = "";
-        $wholePart = intval(floor($number));
-        $fractionalPart = $number - floor($number);
-
-        for ($i = 0; $i < 21; $i++) {
-            $fractionalPart *= 2;
-            $binaryDigit = floor($fractionalPart);
-            $binary .= $binaryDigit;
-            $fractionalPart -= $binaryDigit;
-        }
-
-        return [decbin($wholePart), $binary];
     }
 
     /**
@@ -148,7 +125,7 @@ class FloatHelpers
                         $output_dot = true;
                     }
 
-                    /* if we have a non zero digit, see if we need to output a string of zeros */
+                    /* if we have a non-zero digit, see if we need to output a string of zeros */
                     while ($zero_count > 0) {
                         $result[$pos++] = '0';
                         $zero_count--;

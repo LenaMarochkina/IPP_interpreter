@@ -2,12 +2,12 @@
 
 namespace IPP\Student\Instructions;
 
+use Exception;
 use IPP\Student\Argument;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
-use IPP\Student\Exception\StringOperationException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
@@ -27,6 +27,7 @@ class FLOAT2INTInstruction extends AbstractInstruction
      * @throws SemanticException If some semantic error occurs
      * @throws ValueException If some value is wrong
      * @throws VariableAccessException If some variable does not exist
+     * @throws Exception If some other error occurs
      */
     public function execute(Interpreter $interpreter, Instruction $instruction): void
     {
@@ -52,7 +53,7 @@ class FLOAT2INTInstruction extends AbstractInstruction
 
         if (!$isFromStack) {
             $interpreter->getArgumentVariable($argumentVariable)->setType(E_ARGUMENT_TYPE::INT);
-            $interpreter->getArgumentVariable($argumentVariable)->setValue(floor($argumentIntegerValue));
+            $interpreter->getArgumentVariable($argumentVariable)->setValue(Value::getTypedValueString(E_ARGUMENT_TYPE::INT, $argumentIntegerValue));
         } else {
             $interpreter->dataStack->push(new Argument(
                 Value::getTypedValueString(E_ARGUMENT_TYPE::INT, $argumentIntegerValue),

@@ -6,8 +6,10 @@ use DivisionByZeroError;
 
 use Exception;
 use IPP\Core\AbstractInterpreter;
+use IPP\Core\Exception\InputFileException;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
+use IPP\Student\Core\FileInputReader;
 use IPP\Student\Core\StreamWriter;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Exception\OperandTypeException;
@@ -103,11 +105,16 @@ class Interpreter extends AbstractInterpreter
 
     public int $instructionCounter = 0;
 
+    /**
+     * Initialize interpreter
+     *
+     * @throws InputFileException If input file cannot be opened
+     */
     protected function init(): void
     {
         parent::init();
 
-        $options = getopt("", $this->longOptions, $restIndex);
+        $options = getopt("", $this->longOptions);
         $options = $options ?: [];
 
         $this->globalFrame = new Frame(E_VARIABLE_FRAME::GF);
@@ -119,6 +126,10 @@ class Interpreter extends AbstractInterpreter
 
         $this->stdout = new StreamWriter(STDOUT);
         $this->stderr = new StreamWriter(STDERR);
+
+        $input = $options['input'] ?? null;
+        $input = is_string($input) ? $input : null;
+        $this->input = new FileInputReader($input ?? "php://stdin");
     }
 
     /**
@@ -392,6 +403,7 @@ class Interpreter extends AbstractInterpreter
      * @throws SemanticException If result variable is not a variable type
      * @throws ValueException If variable operands do not have value
      * @throws VariableAccessException If variable does not exist
+     * @throws Exception If some other error occurs
      */
     public function runRelational(Instruction $instruction): void
     {
@@ -447,6 +459,7 @@ class Interpreter extends AbstractInterpreter
      * @throws SemanticException If result variable is not a variable type
      * @throws ValueException If variable operands do not have value
      * @throws VariableAccessException If variable does not exist
+     * @throws Exception If some other error occurs
      */
     public function runBool(Instruction $instruction): void
     {

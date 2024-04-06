@@ -1,0 +1,528 @@
+<?xml version='1.0' encoding='utf-8'?>
+<program language="IPPcode24">
+  <instruction order="1" opcode="DEFVAR">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="2" opcode="WRITE">
+    <arg1 type="string">**MATH**:\010</arg1>
+  </instruction>
+  <instruction order="3" opcode="WRITE">
+    <arg1 type="string">ADDS:\032</arg1>
+  </instruction>
+  <instruction order="4" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="5" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="6" opcode="ADDS" />
+  <instruction order="7" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="8" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="9" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="10" opcode="WRITE">
+    <arg1 type="string">SUBS:\032</arg1>
+  </instruction>
+  <instruction order="11" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="12" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="13" opcode="SUBS" />
+  <instruction order="14" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="15" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="16" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="17" opcode="WRITE">
+    <arg1 type="string">MULS:\032</arg1>
+  </instruction>
+  <instruction order="18" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="19" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="20" opcode="MULS" />
+  <instruction order="21" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="22" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="23" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="24" opcode="WRITE">
+    <arg1 type="string">IDIVS:\032</arg1>
+  </instruction>
+  <instruction order="25" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="26" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="27" opcode="IDIVS" />
+  <instruction order="28" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="29" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="30" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="31" opcode="WRITE">
+    <arg1 type="string">DIVS:\032</arg1>
+  </instruction>
+  <instruction order="32" opcode="PUSHS">
+    <arg1 type="float">0x1.4p+2</arg1>
+  </instruction>
+  <instruction order="33" opcode="PUSHS">
+    <arg1 type="float">0x1p+1</arg1>
+  </instruction>
+  <instruction order="34" opcode="DIVS" />
+  <instruction order="35" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="36" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="37" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="38" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="39" opcode="WRITE">
+    <arg1 type="string">**RELATIONS**:\010</arg1>
+  </instruction>
+  <instruction order="40" opcode="WRITE">
+    <arg1 type="string">LTS:\032</arg1>
+  </instruction>
+  <instruction order="41" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="42" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="43" opcode="LTS" />
+  <instruction order="44" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="45" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="46" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="47" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="48" opcode="PUSHS">
+    <arg1 type="int">8</arg1>
+  </instruction>
+  <instruction order="49" opcode="LTS" />
+  <instruction order="50" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="51" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="52" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="53" opcode="WRITE">
+    <arg1 type="string">GTS:\032</arg1>
+  </instruction>
+  <instruction order="54" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="55" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="56" opcode="GTS" />
+  <instruction order="57" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="58" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="59" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="60" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="61" opcode="PUSHS">
+    <arg1 type="int">8</arg1>
+  </instruction>
+  <instruction order="62" opcode="GTS" />
+  <instruction order="63" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="64" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="65" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="66" opcode="WRITE">
+    <arg1 type="string">EQS:\032</arg1>
+  </instruction>
+  <instruction order="67" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="68" opcode="PUSHS">
+    <arg1 type="int">3</arg1>
+  </instruction>
+  <instruction order="69" opcode="EQS" />
+  <instruction order="70" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="71" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="72" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="73" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="74" opcode="PUSHS">
+    <arg1 type="int">8</arg1>
+  </instruction>
+  <instruction order="75" opcode="EQS" />
+  <instruction order="76" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="77" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="78" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="79" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="80" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="81" opcode="EQS" />
+  <instruction order="82" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="83" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="84" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="85" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="86" opcode="WRITE">
+    <arg1 type="string">**BOOLEAN**:\010</arg1>
+  </instruction>
+  <instruction order="87" opcode="WRITE">
+    <arg1 type="string">ANDS:\032</arg1>
+  </instruction>
+  <instruction order="88" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="89" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="90" opcode="ANDS" />
+  <instruction order="91" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="92" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="93" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="94" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="95" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="96" opcode="ANDS" />
+  <instruction order="97" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="98" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="99" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="100" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="101" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="102" opcode="ANDS" />
+  <instruction order="103" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="104" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="105" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="106" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="107" opcode="WRITE">
+    <arg1 type="string">ORS:\032</arg1>
+  </instruction>
+  <instruction order="108" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="109" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="110" opcode="ORS" />
+  <instruction order="111" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="112" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="113" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="114" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="115" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="116" opcode="ORS" />
+  <instruction order="117" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="118" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="119" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="120" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="121" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="122" opcode="ORS" />
+  <instruction order="123" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="124" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="125" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="126" opcode="WRITE">
+    <arg1 type="string">NOTS:\032</arg1>
+  </instruction>
+  <instruction order="127" opcode="PUSHS">
+    <arg1 type="bool">true</arg1>
+  </instruction>
+  <instruction order="128" opcode="NOTS" />
+  <instruction order="129" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="130" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="131" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="132" opcode="PUSHS">
+    <arg1 type="bool">false</arg1>
+  </instruction>
+  <instruction order="133" opcode="NOTS" />
+  <instruction order="134" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="135" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="136" opcode="WRITE">
+    <arg1 type="string">\032</arg1>
+  </instruction>
+  <instruction order="137" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="138" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="139" opcode="WRITE">
+    <arg1 type="string">**CONVERSIONS**:\010</arg1>
+  </instruction>
+  <instruction order="140" opcode="WRITE">
+    <arg1 type="string">INT2CHARS:\032</arg1>
+  </instruction>
+  <instruction order="141" opcode="PUSHS">
+    <arg1 type="int">65</arg1>
+  </instruction>
+  <instruction order="142" opcode="INT2CHARS" />
+  <instruction order="143" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="144" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="145" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="146" opcode="WRITE">
+    <arg1 type="string">STRI2INTS:\032</arg1>
+  </instruction>
+  <instruction order="147" opcode="PUSHS">
+    <arg1 type="string">ABC</arg1>
+  </instruction>
+  <instruction order="148" opcode="PUSHS">
+    <arg1 type="int">1</arg1>
+  </instruction>
+  <instruction order="149" opcode="STRI2INTS" />
+  <instruction order="150" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="151" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="152" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="153" opcode="WRITE">
+    <arg1 type="string">INT2FLOATS:\032</arg1>
+  </instruction>
+  <instruction order="154" opcode="PUSHS">
+    <arg1 type="int">65</arg1>
+  </instruction>
+  <instruction order="155" opcode="INT2FLOATS" />
+  <instruction order="156" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="157" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="158" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="159" opcode="WRITE">
+    <arg1 type="string">FLOAT2INTS:\032</arg1>
+  </instruction>
+  <instruction order="160" opcode="PUSHS">
+    <arg1 type="float">0x1.0ap+7</arg1>
+  </instruction>
+  <instruction order="161" opcode="FLOAT2INTS" />
+  <instruction order="162" opcode="POPS">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="163" opcode="WRITE">
+    <arg1 type="var">GF@result</arg1>
+  </instruction>
+  <instruction order="164" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="165" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="166" opcode="WRITE">
+    <arg1 type="string">**JUMPS**:\010</arg1>
+  </instruction>
+  <instruction order="167" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="168" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="169" opcode="JUMPIFEQS">
+    <arg1 type="label">jumpHereIFEqualSuccess</arg1>
+  </instruction>
+  <instruction order="170" opcode="JUMP">
+    <arg1 type="label">jumpHereIFEqualFail</arg1>
+  </instruction>
+  <instruction order="171" opcode="LABEL">
+    <arg1 type="label">jumpHereIFEqualSuccess</arg1>
+  </instruction>
+  <instruction order="172" opcode="WRITE">
+    <arg1 type="string">JUMPIFEQS:\032success</arg1>
+  </instruction>
+  <instruction order="173" opcode="JUMP">
+    <arg1 type="label">jumpHereIFEqualEnd</arg1>
+  </instruction>
+  <instruction order="174" opcode="LABEL">
+    <arg1 type="label">jumpHereIFEqualFail</arg1>
+  </instruction>
+  <instruction order="175" opcode="WRITE">
+    <arg1 type="string">JUMPIFEQS:\032fail</arg1>
+  </instruction>
+  <instruction order="176" opcode="JUMP">
+    <arg1 type="label">jumpHereIFEqualEnd</arg1>
+  </instruction>
+  <instruction order="177" opcode="LABEL">
+    <arg1 type="label">jumpHereIFEqualEnd</arg1>
+  </instruction>
+  <instruction order="178" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="179" opcode="PUSHS">
+    <arg1 type="int">5</arg1>
+  </instruction>
+  <instruction order="180" opcode="PUSHS">
+    <arg1 type="int">2</arg1>
+  </instruction>
+  <instruction order="181" opcode="JUMPIFNEQS">
+    <arg1 type="label">jumpHereIFNotEqualSuccess</arg1>
+  </instruction>
+  <instruction order="182" opcode="JUMP">
+    <arg1 type="label">jumpHereIFNotEqualFail</arg1>
+  </instruction>
+  <instruction order="183" opcode="LABEL">
+    <arg1 type="label">jumpHereIFNotEqualSuccess</arg1>
+  </instruction>
+  <instruction order="184" opcode="WRITE">
+    <arg1 type="string">JUMPIFNEQS:\032success</arg1>
+  </instruction>
+  <instruction order="185" opcode="JUMP">
+    <arg1 type="label">jumpHereIFNotEqualEnd</arg1>
+  </instruction>
+  <instruction order="186" opcode="LABEL">
+    <arg1 type="label">jumpHereIFNotEqualFail</arg1>
+  </instruction>
+  <instruction order="187" opcode="WRITE">
+    <arg1 type="string">JUMPIFNEQS:\032fail</arg1>
+  </instruction>
+  <instruction order="188" opcode="JUMP">
+    <arg1 type="label">jumpHereIFNotEqualEnd</arg1>
+  </instruction>
+  <instruction order="189" opcode="LABEL">
+    <arg1 type="label">jumpHereIFNotEqualEnd</arg1>
+  </instruction>
+  <instruction order="190" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+  <instruction order="191" opcode="WRITE">
+    <arg1 type="string">\010</arg1>
+  </instruction>
+</program>

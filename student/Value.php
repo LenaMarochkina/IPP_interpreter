@@ -86,9 +86,7 @@ class Value
                 throw new SemanticException("Invalid float value '$value'");
             }
 
-            if (is_null(($result = FloatHelpers::parseInputFloat($value)) || ($result = floatval($value)))) {
-                throw new SemanticException("Invalid float value '$value'");
-            }
+            $result = FloatHelpers::parseInputFloat($value) ?? floatval($value);
 
             $value = $result;
         }
@@ -149,10 +147,10 @@ class Value
     /**
      * Determine type of the value
      *
-     * @param int|string|bool|null $value Value to determine type of
+     * @param float|int|string|bool|null $value Value to determine type of
      * @return E_ARGUMENT_TYPE Type of the value
      */
-    public static function determineValueType(int|string|bool|null $value): E_ARGUMENT_TYPE
+    public static function determineValueType(float|int|string|bool|null $value): E_ARGUMENT_TYPE
     {
         if (is_string($value)) {
             return E_ARGUMENT_TYPE::STRING;
@@ -164,6 +162,10 @@ class Value
 
         if (is_bool($value)) {
             return E_ARGUMENT_TYPE::BOOL;
+        }
+
+        if (is_float($value)) {
+            return E_ARGUMENT_TYPE::FLOAT;
         }
 
         return E_ARGUMENT_TYPE::NIL;
