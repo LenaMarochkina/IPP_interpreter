@@ -43,3 +43,7 @@ WRITE string@\032-\032
 FLOAT2INT GF@result GF@result
 WRITE GF@result
 WRITE string@\010
+
+BREAK
+
+EXIT int@8

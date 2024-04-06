@@ -123,4 +123,8 @@
   <instruction order="38" opcode="WRITE">
     <arg1 type="string">\010</arg1>
   </instruction>
+  <instruction order="39" opcode="BREAK" />
+  <instruction order="40" opcode="EXIT">
+    <arg1 type="int">8</arg1>
+  </instruction>
 </program>

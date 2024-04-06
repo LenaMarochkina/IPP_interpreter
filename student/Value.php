@@ -211,7 +211,7 @@ class Value
         $outputValue = stream_get_contents($stream);
         fclose($stream);
 
-        if (empty($outputValue))
+        if (strlen($outputValue) === 0 || $outputValue === false)
             $outputValue = '-';
 
         return $outputValue;
