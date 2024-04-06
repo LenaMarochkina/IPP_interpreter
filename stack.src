@@ -1,0 +1,219 @@
+.IPPcode24
+DEFVAR GF@result
+
+WRITE string@**MATH**:\010
+
+WRITE string@ADDS:\032
+PUSHS int@5
+PUSHS int@3
+ADDS
+POPS GF@result
+WRITE GF@result                 #8
+WRITE string@\010
+
+WRITE string@SUBS:\032
+PUSHS int@5
+PUSHS int@3
+SUBS
+POPS GF@result
+WRITE GF@result                 #2
+WRITE string@\010
+
+WRITE string@MULS:\032
+PUSHS int@5
+PUSHS int@3
+MULS
+POPS GF@result
+WRITE GF@result                 #15
+WRITE string@\010
+
+WRITE string@IDIVS:\032
+PUSHS int@5
+PUSHS int@3
+IDIVS
+POPS GF@result
+WRITE GF@result                 #1
+WRITE string@\010
+
+WRITE string@DIVS:\032
+PUSHS float@0x1.4p+2
+PUSHS float@0x1p+1
+DIVS
+POPS GF@result
+WRITE GF@result                 #0x1.4p+1 (2.500000)
+WRITE string@\010
+WRITE string@\010
+
+WRITE string@**RELATIONS**:\010
+
+WRITE string@LTS:\032
+PUSHS int@5
+PUSHS int@3
+LTS
+POPS GF@result
+WRITE GF@result                 #false (5 !< 3)
+WRITE string@\032
+PUSHS int@5
+PUSHS int@8
+LTS
+POPS GF@result
+WRITE GF@result                 #true (5 < 8)
+WRITE string@\010
+
+WRITE string@GTS:\032
+PUSHS int@5
+PUSHS int@3
+GTS
+POPS GF@result
+WRITE GF@result                 #true (5 > 3)
+WRITE string@\032
+PUSHS int@5
+PUSHS int@8
+GTS
+POPS GF@result
+WRITE GF@result                 #false (5 !> 8)
+WRITE string@\010
+
+WRITE string@EQS:\032
+PUSHS int@5
+PUSHS int@3
+EQS
+POPS GF@result
+WRITE GF@result                 #false (5 != 3)
+WRITE string@\032
+PUSHS int@5
+PUSHS int@8
+EQS
+POPS GF@result
+WRITE GF@result                 #false (5 != 8)
+WRITE string@\032
+PUSHS int@5
+PUSHS int@5
+EQS
+POPS GF@result
+WRITE GF@result                 #true (5 == 5)
+WRITE string@\010
+WRITE string@\010
+
+WRITE string@**BOOLEAN**:\010
+
+WRITE string@ANDS:\032
+PUSHS bool@true
+PUSHS bool@false
+ANDS
+POPS GF@result
+WRITE GF@result                 #false
+WRITE string@\032
+PUSHS bool@true
+PUSHS bool@true
+ANDS
+POPS GF@result
+WRITE GF@result                 #true
+WRITE string@\032
+PUSHS bool@false
+PUSHS bool@false
+ANDS
+POPS GF@result
+WRITE GF@result                 #false
+WRITE string@\032
+WRITE string@\010
+
+WRITE string@ORS:\032
+PUSHS bool@true
+PUSHS bool@false
+ORS
+POPS GF@result
+WRITE GF@result                 #true
+WRITE string@\032
+PUSHS bool@true
+PUSHS bool@true
+ORS
+POPS GF@result
+WRITE GF@result                 #true
+WRITE string@\032
+PUSHS bool@false
+PUSHS bool@false
+ORS
+POPS GF@result
+WRITE GF@result                 #false
+WRITE string@\010
+
+WRITE string@NOTS:\032
+PUSHS bool@true
+NOTS
+POPS GF@result
+WRITE GF@result                 #false
+WRITE string@\032
+PUSHS bool@false
+NOTS
+POPS GF@result
+WRITE GF@result                 #true
+WRITE string@\032
+WRITE string@\010
+WRITE string@\010
+
+WRITE string@**CONVERSIONS**:\010
+
+WRITE string@INT2CHARS:\032
+PUSHS int@65
+INT2CHARS
+POPS GF@result
+WRITE GF@result                 #A
+WRITE string@\010
+
+WRITE string@STRI2INTS:\032
+PUSHS string@ABC
+PUSHS int@1
+STRI2INTS
+POPS GF@result
+WRITE GF@result                 #66
+WRITE string@\010
+
+WRITE string@INT2FLOATS:\032
+PUSHS int@65
+INT2FLOATS
+POPS GF@result
+WRITE GF@result                 #0x1.04p+6 (65.000000)
+WRITE string@\010
+
+WRITE string@FLOAT2INTS:\032
+PUSHS float@0x1.0ap+7
+FLOAT2INTS
+POPS GF@result
+WRITE GF@result                 #133
+WRITE string@\010
+WRITE string@\010
+
+WRITE string@**JUMPS**:\010
+
+PUSHS int@5
+PUSHS int@5
+
+JUMPIFEQS jumpHereIFEqualSuccess
+JUMP jumpHereIFEqualFail
+
+LABEL jumpHereIFEqualSuccess
+    WRITE string@JUMPIFEQS:\032success
+    JUMP jumpHereIFEqualEnd
+LABEL jumpHereIFEqualFail
+    WRITE string@JUMPIFEQS:\032fail
+    JUMP jumpHereIFEqualEnd
+LABEL jumpHereIFEqualEnd
+WRITE string@\010
+
+PUSHS int@5
+PUSHS int@2
+
+JUMPIFNEQS jumpHereIFNotEqualSuccess
+JUMP jumpHereIFNotEqualFail
+
+LABEL jumpHereIFNotEqualSuccess
+    WRITE string@JUMPIFNEQS:\032success
+    JUMP jumpHereIFNotEqualEnd
+LABEL jumpHereIFNotEqualFail
+    WRITE string@JUMPIFNEQS:\032fail
+    JUMP jumpHereIFNotEqualEnd
+LABEL jumpHereIFNotEqualEnd
+WRITE string@\010
+WRITE string@\010
+
