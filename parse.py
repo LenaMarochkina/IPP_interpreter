@@ -86,8 +86,8 @@ CODE_COMMANDS = {
     'STRI2INTS': CodeCommand('STRI2INTS', []),
     'INT2FLOATS': CodeCommand('INT2FLOATS', []),
     'FLOAT2INTS': CodeCommand('FLOAT2INTS', []),
-    'JUMPIFEQS': CodeCommand('JUMPIFEQS', []),
-    'JUMPIFNEQS': CodeCommand('JUMPIFNEQS', []),
+    'JUMPIFEQS': CodeCommand('JUMPIFEQS', [E_ARG_TYPE.LABEL]),
+    'JUMPIFNEQS': CodeCommand('JUMPIFNEQS', [E_ARG_TYPE.LABEL]),
 }
 
 
