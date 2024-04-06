@@ -20,7 +20,7 @@ class TablePrinter
 
     /**
      * Table rows in format [row_id => [column_name => value, ...]]
-     * @var array<string,array<string, string> Rows
+     * @var array<string,array<string, string>> Rows
      */
     private array $rows = [];
 
@@ -45,21 +45,32 @@ class TablePrinter
         $this->columns = $columns;
     }
 
-    public function addColumn(string $name, string $title): void
-    {
-        $this->columns[$name] = $title;
-    }
-
+    /**
+     * Add row to table
+     *
+     * @param string $id Row ID
+     * @param array<string, string> $row Row data in format [column_name => value, ...]
+     */
     public function addRow(string $id, array $row): void
     {
         $this->rows[$id] = $row;
     }
 
+    /**
+     * Set table caption
+     *
+     * @param string $caption Table caption
+     */
     public function setCaption(string $caption): void
     {
         $this->caption = $caption;
     }
 
+    /**
+     * Get table width for each column
+     *
+     * @return array<string, int> Column widths
+     */
     private function getTableWidth(): array
     {
         if (empty($this->rows)) {
@@ -88,6 +99,11 @@ class TablePrinter
         );
     }
 
+    /**
+     * Get total width of the table
+     *
+     * @return int Total width
+     */
     private function getTotalWidth(): int
     {
         $widths = $this->getTableWidth();
@@ -98,6 +114,9 @@ class TablePrinter
             + 2; // First and last column have a separator
     }
 
+    /**
+     * Print table to output
+     */
     public function printTable(): void
     {
         $this->printHeader();
@@ -114,6 +133,9 @@ class TablePrinter
         $this->output->writeString("\n");
     }
 
+    /**
+     * Print table header
+     */
     private function printHeader(): void
     {
         $widths = $this->getTableWidth();
@@ -148,6 +170,11 @@ class TablePrinter
         $this->output->writeString(ANSI_CLOSE);
     }
 
+    /**
+     * Print table row
+     *
+     * @param array<string, string> $row Row data
+     */
     private function printRow(array $row): void
     {
         $widths = $this->getTableWidth();

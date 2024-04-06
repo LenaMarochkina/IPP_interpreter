@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Core\Exception\OutputFileException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
@@ -15,6 +16,7 @@ class BREAKInstruction extends AbstractInstruction
      * @param Interpreter $interpreter Interpreter instance
      * @param Instruction $instruction Instruction instance
      * @throws SemanticException If some semantic error occurs
+     * @throws OutputFileException If some output file error occurs
      */
     public function execute(Interpreter $interpreter, Instruction $instruction): void
     {

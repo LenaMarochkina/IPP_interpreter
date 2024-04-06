@@ -2,11 +2,10 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Core\Exception\OutputFileException;
 use IPP\Student\E_ARGUMENT_TYPE;
 use IPP\Student\Exception\FrameAccessException;
-use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
-use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
@@ -20,9 +19,10 @@ class DPRINTInstruction extends AbstractInstruction
      *
      * @param Interpreter $interpreter Interpreter instance
      * @param Instruction $instruction Instruction instance
-     * @throws SemanticException If some semantic error occurs
      * @throws FrameAccessException If some variable frame does not exist
+     * @throws SemanticException If some semantic error occurs
      * @throws VariableAccessException If some variable does not exist
+     * @throws OutputFileException If some output file error occurs
      */
     public function execute(Interpreter $interpreter, Instruction $instruction): void
     {

@@ -2,6 +2,7 @@
 
 namespace IPP\Student;
 
+use IPP\Core\Exception\OutputFileException;
 use IPP\Student\Core\StreamWriter;
 use IPP\Student\Exception\SemanticException;
 
@@ -176,6 +177,7 @@ class Value
      * Get string value for STDOUT
      *
      * @throws SemanticException If type is not a string, int or bool
+     * @throws OutputFileException If output file cannot be opened
      */
     public function outputValueForSTDOUT(E_ARGUMENT_TYPE $type): string
     {
@@ -200,6 +202,8 @@ class Value
                 break;
             case E_ARGUMENT_TYPE::FLOAT:
                 $outputWriter->writeFloat($typedValue);
+                break;
+            default:
                 break;
         }
 

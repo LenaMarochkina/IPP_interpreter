@@ -2,6 +2,7 @@
 
 namespace IPP\Student;
 
+use IPP\Core\Exception\OutputFileException;
 use IPP\Student\Exception\SemanticException;
 
 class Debugger
@@ -16,7 +17,12 @@ class Debugger
     /**
      * Print symbol row
      *
+     * @param string $name Name of the symbol
+     * @param string $frame Frame of the symbol
+     * @param string $type Type of the symbol
+     * @param Value $value Value of the symbol
      * @throws SemanticException If some semantic error occurs
+     * @throws OutputFileException If some output file error occurs
      */
     public function printSymbolRow(
         string $name,
@@ -49,7 +55,12 @@ class Debugger
     }
 
     /**
-     * @throws SemanticException
+     * Print frame
+     *
+     * @param Frame $frame Frame to print
+     * @param string|null $caption Caption of the frame
+     * @throws OutputFileException If some output file error occurs
+     * @throws SemanticException If some semantic error occurs
      */
     public function printFrame(Frame $frame, ?string $caption = null): void
     {
