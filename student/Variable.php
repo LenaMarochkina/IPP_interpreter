@@ -98,6 +98,16 @@ class Variable
     }
 
     /**
+     * Return variable value instance
+     *
+     * @return Value Value instance
+     */
+    public function getValue(): Value
+    {
+        return $this->value;
+    }
+
+    /**
      * Parse variable name to frame and name
      *
      * @param string $name Variable name

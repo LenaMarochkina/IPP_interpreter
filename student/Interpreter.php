@@ -9,6 +9,7 @@ use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\InputFileException;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
+use IPP\Core\Interface\OutputWriter;
 use IPP\Student\Core\FileInputReader;
 use IPP\Student\Core\StreamWriter;
 use IPP\Student\Exception\FrameAccessException;
@@ -20,6 +21,49 @@ use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
+
+
+/**
+ * Escape character
+ */
+define('ESC', "\033");
+
+/**
+ * ANSI colours
+ */
+define('ANSI_BLACK', ESC . "[30m");
+define('ANSI_RED', ESC . "[31m");
+define('ANSI_GREEN', ESC . "[32m");
+define('ANSI_YELLOW', ESC . "[33m");
+define('ANSI_BLUE', ESC . "[34m");
+define('ANSI_MAGENTA', ESC . "[35m");
+define('ANSI_CYAN', ESC . "[36m");
+define('ANSI_WHITE', ESC . "[37m");
+
+/**
+ * ANSI background colours
+ */
+define('ANSI_BACKGROUND_BLACK', ESC . "[40m");
+define('ANSI_BACKGROUND_RED', ESC . "[41m");
+define('ANSI_BACKGROUND_GREEN', ESC . "[42m");
+define('ANSI_BACKGROUND_YELLOW', ESC . "[43m");
+define('ANSI_BACKGROUND_BLUE', ESC . "[44m");
+define('ANSI_BACKGROUND_MAGENTA', ESC . "[45m");
+define('ANSI_BACKGROUND_CYAN', ESC . "[46m");
+define('ANSI_BACKGROUND_WHITE', ESC . "[47m");
+
+/**
+ * ANSI styles
+ */
+define('ANSI_BOLD', ESC . "[1m");
+define('ANSI_ITALIC', ESC . "[3m"); // limited support. ymmv.
+define('ANSI_UNDERLINE', ESC . "[4m");
+define('ANSI_STRIKETHROUGH', ESC . "[9m");
+
+/**
+ * Clear all ANSI styling
+ */
+define('ANSI_CLOSE', ESC . "[0m");
 
 global $MATH_MAP;
 /**
@@ -80,6 +124,13 @@ class Interpreter extends AbstractInterpreter
         "input:"
     ];
 
+    public Debugger $debugger;
+
+    /**
+     * @var Instruction[] $parsedInstructions Parsed instructions
+     */
+    public array $parsedInstructions;
+
     public Frame $globalFrame;
     public Frame|null $temporaryFrame;
 
@@ -104,6 +155,12 @@ class Interpreter extends AbstractInterpreter
     public GenericStack $dataStack;
 
     public int $instructionCounter = 0;
+    public int $executionCounter = 0;
+
+    /**
+     * @var array<string, int> $executionStatistics Execution statistics
+     */
+    public array $executionStatistics = [];
 
     /**
      * Initialize interpreter
@@ -116,6 +173,8 @@ class Interpreter extends AbstractInterpreter
 
         $options = getopt("", $this->longOptions);
         $options = $options ?: [];
+
+        $this->debugger = new Debugger($this);
 
         $this->globalFrame = new Frame(E_VARIABLE_FRAME::GF);
         $this->localFrameStack = new GenericStack();
@@ -518,19 +577,15 @@ class Interpreter extends AbstractInterpreter
     }
 
     /**
-     * Process and interpret xml source
+     * Read and process source XML
      *
-     * @return int Exit code
      * @throws OperandTypeException If some operand has wrong type
      * @throws SemanticException If some semantic error occurs
      * @throws XMLException If XML parsing error occurs
      */
-    public function execute(): int
+    private function processXML(): void
     {
         $dom = $this->source->getDOMDocument();
-
-        /** @var Instruction[] $parsedInstructions */
-        $parsedInstructions = [];
 
         /** @var DOMElement $programElement */
         $programElement = $dom->documentElement;
@@ -602,10 +657,23 @@ class Interpreter extends AbstractInterpreter
                 $parsedArguments[] = new Argument($argumentValue, $argument);
             }
 
-            $parsedInstructions[] = new Instruction($instructionName, $parsedArguments, (int)$orderAttribute->value);
+            $this->parsedInstructions[] = new Instruction($instructionName, $parsedArguments, (int)$orderAttribute->value);
         }
+    }
 
-        foreach ($parsedInstructions as $instruction) {
+    /**
+     * Run interpreter
+     *
+     * @return int Exit code
+     * @throws OperandTypeException If some operand has wrong type
+     * @throws SemanticException If some semantic error occurs
+     * @throws XMLException If XML parsing error occurs
+     */
+    public function execute(): int
+    {
+        $this->processXML();
+
+        foreach ($this->parsedInstructions as $instruction) {
             if ($instruction->getName() === E_INSTRUCTION_NAME::LABEL) {
                 $labelArgument = $instruction->getArgument(0);
 
@@ -627,14 +695,17 @@ class Interpreter extends AbstractInterpreter
             }
         }
 
-        for (; $this->instructionCounter < count($parsedInstructions); $this->instructionCounter++) {
-            $instruction = $parsedInstructions[$this->instructionCounter];
+        for (; $this->instructionCounter < count($this->parsedInstructions); $this->instructionCounter++) {
+            $instruction = $this->parsedInstructions[$this->instructionCounter];
             $buildInInstruction = BuiltInInstruction::getInstruction($instruction->getName());
             $executionInstruction = $buildInInstruction->getExecutionInstruction();
 
             if ($executionInstruction === null) continue;
 
             $executionInstruction->execute($this, $instruction);
+
+            $this->executionCounter++;
+            $this->executionStatistics[$instruction->getName()->value] = ($this->executionStatistics[$instruction->getName()->value] ?? 0) + 1;
         }
 
         return 0;
@@ -643,5 +714,10 @@ class Interpreter extends AbstractInterpreter
     public function getInput(): InputReader
     {
         return $this->input;
+    }
+
+    public function getStdErr(): OutputWriter
+    {
+        return $this->stderr;
     }
 }

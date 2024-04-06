@@ -1,2 +1,51 @@
 .IPPcode24
-WRITE float@0x0p+0
+DEFVAR GF@abc
+MOVE GF@abc string@ahoj
+DPRINT GF@abc
+
+DEFVAR GF@float
+MOVE GF@float float@1.5
+DPRINT GF@float
+
+DPRINT nil@nil
+
+DEFVAR GF@undefined
+
+CREATEFRAME
+DEFVAR TF@abc
+MOVE TF@abc string@ahojtetee
+
+PUSHFRAME
+
+CREATEFRAME
+DEFVAR TF@abc3
+MOVE TF@abc3 bool@true
+
+PUSHFRAME
+
+CREATEFRAME
+DEFVAR TF@abc4
+MOVE TF@abc4 int@5
+
+PUSHS int@5
+PUSHS bool@true
+PUSHS string@ahoj
+PUSHS float@1.5
+PUSHS nil@nil
+
+CALL func1
+JUMP $END
+
+LABEL func1
+WRITE int@2
+CALL func2
+WRITE int@4
+RETURN
+
+LABEL func2
+WRITE int@3
+BREAK
+RETURN
+
+LABEL $END
+

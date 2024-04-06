@@ -525,4 +525,5 @@
   <instruction order="191" opcode="WRITE">
     <arg1 type="string">\010</arg1>
   </instruction>
+  <instruction order="192" opcode="BREAK" />
 </program>

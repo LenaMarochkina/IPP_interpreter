@@ -3,6 +3,7 @@
 namespace IPP\Student\Instructions;
 
 use Exception;
+use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
@@ -24,6 +25,9 @@ class POPFRAMEInstruction extends AbstractInstruction
             throw new FrameAccessException("Local frame does not exist");
         }
 
-        $interpreter->temporaryFrame = $interpreter->localFrameStack->pop();
+        $frame = $interpreter->localFrameStack->pop();
+        $frame->setFrame(E_VARIABLE_FRAME::TF);
+
+        $interpreter->temporaryFrame = $frame;
     }
 }

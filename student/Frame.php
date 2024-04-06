@@ -59,6 +59,16 @@ class Frame
     }
 
     /**
+     * Get frame variables
+     *
+     * @return Variable[] Array of frame variables
+     */
+    public function getVariables(): array
+    {
+        return $this->variables;
+    }
+
+    /**
      * Check if variable exists in frame
      *s
      * @param string $name Variable name
@@ -67,5 +77,25 @@ class Frame
     public function containsVariable(string $name): bool
     {
         return array_key_exists($name, $this->variables);
+    }
+
+    /**
+     * Set frame type
+     *
+     * @param E_VARIABLE_FRAME $frame Frame type
+     */
+    public function setFrame(E_VARIABLE_FRAME $frame): void
+    {
+        $this->frame = $frame;
+    }
+
+    /**
+     * Get frame type
+     *
+     * @return E_VARIABLE_FRAME Frame type
+     */
+    public function getFrame(): E_VARIABLE_FRAME
+    {
+        return $this->frame;
     }
 }

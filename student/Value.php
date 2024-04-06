@@ -2,6 +2,7 @@
 
 namespace IPP\Student;
 
+use IPP\Student\Core\StreamWriter;
 use IPP\Student\Exception\SemanticException;
 
 /**
@@ -169,5 +170,46 @@ class Value
         }
 
         return E_ARGUMENT_TYPE::NIL;
+    }
+
+    /**
+     * Get string value for STDOUT
+     *
+     * @throws SemanticException If type is not a string, int or bool
+     */
+    public function outputValueForSTDOUT(E_ARGUMENT_TYPE $type): string
+    {
+        $stream = fopen('php://memory', 'r+');
+        $outputWriter = new StreamWriter($stream);
+
+        if ($type === E_ARGUMENT_TYPE::VAR) {
+            return '-';
+        }
+
+        $typedValue = $this->getTypedValue($type);
+
+        switch ($type) {
+            case E_ARGUMENT_TYPE::INT:
+                $outputWriter->writeInt($typedValue);
+                break;
+            case E_ARGUMENT_TYPE::BOOL:
+                $outputWriter->writeBool($typedValue);
+                break;
+            case E_ARGUMENT_TYPE::STRING:
+                $outputWriter->writeString($typedValue);
+                break;
+            case E_ARGUMENT_TYPE::FLOAT:
+                $outputWriter->writeFloat($typedValue);
+                break;
+        }
+
+        rewind($stream);
+        $outputValue = stream_get_contents($stream);
+        fclose($stream);
+
+        if (empty($outputValue))
+            $outputValue = '-';
+
+        return $outputValue;
     }
 }

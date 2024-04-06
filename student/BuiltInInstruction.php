@@ -6,12 +6,14 @@ use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
 use IPP\Student\Instructions\ADDInstruction;
 use IPP\Student\Instructions\ANDInstruction;
+use IPP\Student\Instructions\BREAKInstruction;
 use IPP\Student\Instructions\CALLInstruction;
 use IPP\Student\Instructions\CLEARSInstruction;
 use IPP\Student\Instructions\CONCATInstruction;
 use IPP\Student\Instructions\CREATEFRAMEInstruction;
 use IPP\Student\Instructions\DEFVARInstruction;
 use IPP\Student\Instructions\DIVInstruction;
+use IPP\Student\Instructions\DPRINTInstruction;
 use IPP\Student\Instructions\EQInstruction;
 use IPP\Student\Instructions\EXITInstruction;
 use IPP\Student\Instructions\FLOAT2INTInstruction;
@@ -207,8 +209,8 @@ $INSTRUCTIONS = [
     // Debug
     new BuiltInInstruction(E_INSTRUCTION_NAME::DPRINT, [
         [E_ARGUMENT_TYPE::STRING, E_ARGUMENT_TYPE::INT, E_ARGUMENT_TYPE::FLOAT, E_ARGUMENT_TYPE::BOOL, E_ARGUMENT_TYPE::NIL, E_ARGUMENT_TYPE::VAR]
-    ]),
-    new BuiltInInstruction(E_INSTRUCTION_NAME::BREAK, []),
+    ], new DPRINTInstruction()),
+    new BuiltInInstruction(E_INSTRUCTION_NAME::BREAK, [], new BREAKInstruction()),
 
     // Stack
     new BuiltInInstruction(E_INSTRUCTION_NAME::CLEARS, [], new CLEARSInstruction()),

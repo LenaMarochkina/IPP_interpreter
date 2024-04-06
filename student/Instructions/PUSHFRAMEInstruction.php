@@ -2,6 +2,7 @@
 
 namespace IPP\Student\Instructions;
 
+use IPP\Student\E_VARIABLE_FRAME;
 use IPP\Student\Exception\FrameAccessException;
 use IPP\Student\Instruction;
 use IPP\Student\Interpreter;
@@ -22,6 +23,8 @@ class PUSHFRAMEInstruction extends AbstractInstruction
         if ($interpreter->temporaryFrame === null) {
             throw new FrameAccessException("Temporary frame does not exist");
         }
+
+        $interpreter->temporaryFrame->setFrame(E_VARIABLE_FRAME::LF);
 
         $interpreter->localFrameStack->push($interpreter->temporaryFrame);
         $interpreter->temporaryFrame = null;

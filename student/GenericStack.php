@@ -68,5 +68,25 @@ class GenericStack
     {
         $this->items = [];
     }
+
+    /**
+     * Reads all items from the stack.
+     *
+     * @return array<T> The items in the stack.
+     */
+    public function readItems(): array
+    {
+        return $this->items;
+    }
+
+    /**
+     * Returns the number of elements in the stack.
+     *
+     * @return int The number of elements in the stack.
+     */
+    public function size(): int
+    {
+        return count($this->items);
+    }
 }
 
