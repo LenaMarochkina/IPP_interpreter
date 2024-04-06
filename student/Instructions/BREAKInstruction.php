@@ -47,6 +47,7 @@ class BREAKInstruction extends AbstractInstruction
             $interpreter->debugger->printFrame($interpreter->temporaryFrame, '\/ TEMPORARY FRAME \/');
         } else {
             $interpreter->getStdErr()->writeString(ANSI_BACKGROUND_MAGENTA . ANSI_BLACK . ANSI_BOLD . " [X]  No temporary frame  " . ANSI_CLOSE);
+            $interpreter->getStdErr()->writeString("\n");
         }
 
         $interpreter->getStdErr()->writeString("\n");
