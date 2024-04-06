@@ -673,6 +673,8 @@ class Interpreter extends AbstractInterpreter
     {
         $this->processXML();
 
+        if (empty($this->parsedInstructions)) return 0;
+
         foreach ($this->parsedInstructions as $instruction) {
             if ($instruction->getName() === E_INSTRUCTION_NAME::LABEL) {
                 $labelArgument = $instruction->getArgument(0);
