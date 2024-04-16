@@ -28,12 +28,23 @@ class DPRINTInstruction extends AbstractInstruction
     {
         $argument = $instruction->getArgument(0);
 
+        if (is_null($argument)) {
+            throw new SemanticException("Invalid DPRINT instruction");
+        }
+
         $type = $interpreter->getOperandFinalType($argument);
 
         $isVariable = $argument->getType() === E_ARGUMENT_TYPE::VAR;
 
-        if ($isVariable)
-            [$frame, $name] = Variable::parseVariableName($argument->getValue()->getValue());
+        if ($isVariable) {
+            $variableFullName = $argument->getValue()->getValue();
+
+            if (is_null($variableFullName)) {
+                throw new VariableAccessException("Variable has no name");
+            }
+
+            [$frame, $name] = Variable::parseVariableName($variableFullName);
+        }
 
         $interpreter->debugger->printSymbolRow(
             $isVariable ? $name : '-',

@@ -4,6 +4,7 @@ namespace IPP\Student;
 
 use IPP\Student\Exception\OperandTypeException;
 use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\SourceException;
 use IPP\Student\Instructions\ADDInstruction;
 use IPP\Student\Instructions\ANDInstruction;
 use IPP\Student\Instructions\BREAKInstruction;
@@ -298,13 +299,13 @@ class BuiltInInstruction
      *
      * @param Argument[] $args arguments to validate
      *
-     * @throws SemanticException    if wrong number of arguments
+     * @throws SourceException    if wrong number of arguments
      * @throws OperandTypeException if wrong type of some argument
      */
     public function validateArgs(array $args): void
     {
         if (count($args) !== count($this->args)) {
-            throw new SemanticException("Wrong number of arguments for instruction '{$this->name->value}'");
+            throw new SourceException("Wrong number of arguments for instruction '{$this->name->value}'");
         }
 
         foreach ($args as $index => $arg) {
@@ -331,6 +332,12 @@ class BuiltInInstruction
      */
     public function getIsStackInstruction(): bool
     {
-        return $this->getExecutionInstruction()->getIsStackInstruction();
+        $executionInstruction = $this->getExecutionInstruction();
+
+        if (is_null($executionInstruction)) {
+            return false;
+        }
+
+        return $executionInstruction->getIsStackInstruction();
     }
 }

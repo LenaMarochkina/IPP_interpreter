@@ -30,6 +30,10 @@ class PUSHSInstruction extends AbstractInstruction
     {
         $argument = $instruction->getArgument(0);
 
+        if (is_null($argument)) {
+            throw new SemanticException("Invalid POPS instruction");
+        }
+
         $argumentType = $interpreter->getOperandFinalType($argument);
         $argumentValue = $interpreter->getOperandTypedValue($argument);
 

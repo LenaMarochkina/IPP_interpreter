@@ -7,6 +7,7 @@ use DivisionByZeroError;
 use Exception;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\InputFileException;
+use IPP\Core\Exception\IPPException;
 use IPP\Core\Exception\XMLException;
 use IPP\Core\Interface\InputReader;
 use IPP\Core\Interface\OutputWriter;
@@ -19,6 +20,7 @@ use DOMElement;
 use DOMAttr;
 use IPP\Student\Exception\OperandValueException;
 use IPP\Student\Exception\SemanticException;
+use IPP\Student\Exception\SourceException;
 use IPP\Student\Exception\ValueException;
 use IPP\Student\Exception\VariableAccessException;
 
@@ -481,14 +483,14 @@ class Interpreter extends AbstractInterpreter
         $rightTypedValue = $this->getOperandTypedValue($rightOperand);
 
         if (
-            ($instruction->getName() === E_INSTRUCTION_NAME::LT || $instruction->getName() === E_INSTRUCTION_NAME::GT) &&
+            ($instruction->getName() === E_INSTRUCTION_NAME::LT || $instruction->getName() === E_INSTRUCTION_NAME::LTS || $instruction->getName() === E_INSTRUCTION_NAME::GT || $instruction->getName() === E_INSTRUCTION_NAME::GTS) &&
             (($leftTypedValue === null || $rightTypedValue === null) || !$this->isOperandSameType($leftOperand, $rightOperand))
         ) {
             throw new OperandTypeException("{$instruction->getName()->value} instruction operands must be of the same type");
         }
 
         if (
-            ($instruction->getName() === E_INSTRUCTION_NAME::EQ) &&
+            ($instruction->getName() === E_INSTRUCTION_NAME::EQ || $instruction->getName() === E_INSTRUCTION_NAME::EQS) &&
             ($leftTypedValue !== null && $rightTypedValue !== null) &&
             !$this->isOperandSameType($leftOperand, $rightOperand)
         ) {
@@ -582,6 +584,7 @@ class Interpreter extends AbstractInterpreter
      * @throws OperandTypeException If some operand has wrong type
      * @throws SemanticException If some semantic error occurs
      * @throws XMLException If XML parsing error occurs
+     * @throws SourceException
      */
     private function processXML(): void
     {
@@ -595,34 +598,51 @@ class Interpreter extends AbstractInterpreter
 
             if (!$instructionElement instanceof DOMElement) continue;
 
+            $instructionElementTag = $instructionElement->tagName;
+
+            if ($instructionElementTag != "instruction") {
+                throw new SourceException("Invalid instruction tag at $index ($instructionElementTag)");
+            }
+
             $attributes = $instructionElement->attributes;
 
             /** @var DOMAttr|null $opcodeAttribute */
             $opcodeAttribute = $attributes->getNamedItem('opcode');
             if (!$opcodeAttribute || !$opcodeAttribute->value) {
-                throw new XMLException("Missing opcode attribute at $index ($instructionElement->textContent)");
+                throw new SourceException("Missing opcode attribute at $index ($instructionElement->textContent)");
             }
 
             /** @var DOMAttr|null $orderAttribute */
             $orderAttribute = $attributes->getNamedItem('order');
 
             if (!$orderAttribute || !$orderAttribute->value || !is_numeric($orderAttribute->value)) {
-                throw new XMLException("Missing order attribute at $index ($instructionElement->textContent)");
+                throw new SourceException("Missing order attribute at $index ($instructionElement->textContent)");
             }
 
             $intOrder = (int)$orderAttribute->value;
 
             if ($intOrder < 1) {
-                throw new XMLException("Invalid order attribute at $index ($instructionElement->textContent)");
+                throw new SourceException("Invalid order attribute at $intOrder instruction ($intOrder)");
+            }
+
+            if (isset($this->parsedInstructions[$intOrder])) {
+                throw new SourceException("Duplicate order attribute at $intOrder instruction ($intOrder)");
             }
 
             if (!$opcodeAttribute->nodeValue) {
-                throw new XMLException("Missing opcode attribute at $index ($instructionElement->textContent)");
+                throw new SourceException("Missing opcode attribute at $intOrder instruction ($instructionElement->textContent)");
             }
 
-            $instructionName = E_INSTRUCTION_NAME::fromValue($opcodeAttribute->nodeValue);
+            try {
+                $instructionName = E_INSTRUCTION_NAME::fromValue(strtoupper($opcodeAttribute->nodeValue));
+            } catch (IPPException) {
+                throw new SourceException("Invalid opcode attribute at $intOrder instruction ($opcodeAttribute->nodeValue)");
+            }
 
             $argumentElements = $instructionElement->childNodes;
+            /**
+             * @var Argument[] $parsedArguments
+             */
             $parsedArguments = [];
 
             for ($argumentIndex = 0; $argumentIndex < $argumentElements->length; $argumentIndex++) {
@@ -631,33 +651,55 @@ class Interpreter extends AbstractInterpreter
                 if (!$argumentElement instanceof DOMElement) continue;
 
                 $argumentTag = $argumentElement->tagName;
-                $argumentExpectedOrder = count($parsedArguments) + 1;
+                $argumentOrder = substr($argumentTag, 3);
 
-                if ($argumentTag != "arg$argumentExpectedOrder") {
-                    throw new XMLException("Invalid argument tag order at $index ($instructionElement->textContent)");
+                if (!is_numeric($argumentOrder)) {
+                    throw new SourceException("Invalid argument tag at $intOrder ($instructionName->value) instruction ($argumentTag)");
+                }
+
+                $argumentOrderInt = intval($argumentOrder);
+
+                if ($argumentOrderInt < 1) {
+                    throw new SourceException("Invalid argument order at $intOrder ($instructionName->value) instruction ($argumentOrderInt)");
                 }
 
                 /** @var DOMAttr|null $argumentTypeAttribute */
                 $argumentTypeAttribute = $argumentElement->attributes->getNamedItem("type");
 
                 if (!$argumentTypeAttribute || !$argumentTypeAttribute->value) {
-                    throw new XMLException("Missing argument type attribute at $index ($instructionElement->textContent)");
+                    throw new XMLException("Missing argument type attribute at $intOrder ($instructionName->value) instruction ($instructionElement->textContent)");
                 }
 
                 $argumentType = $argumentTypeAttribute->value;
 
                 if (!E_ARGUMENT_TYPE::containsValue($argumentType)) {
-                    throw new OperandTypeException("Invalid argument type at $index ($instructionElement->textContent)");
+                    throw new OperandTypeException("Invalid argument type at $intOrder ($instructionName->value) instruction ($instructionElement->textContent)");
                 }
 
                 $argument = E_ARGUMENT_TYPE::fromValue($argumentType);
 
                 $argumentValue = $argumentElement->nodeValue;
 
-                $parsedArguments[] = new Argument($argumentValue, $argument);
+                $parsedArguments[$argumentOrderInt - 1] = new Argument($argumentValue, $argument);
+
+                try {
+                    if ($argument->isLiteralType()) {
+                        end($parsedArguments)->getTypedValue();
+                    }
+                } catch (IPPException) {
+                    throw new SourceException("Invalid argument value at $intOrder ($instructionName->value) instruction ($argumentValue)");
+                }
             }
 
-            $this->parsedInstructions[] = new Instruction($instructionName, $parsedArguments, (int)$orderAttribute->value);
+            for ($parsedArgumentIndex = 0; $parsedArgumentIndex < array_key_last($parsedArguments); $parsedArgumentIndex++) {
+                if (!isset($parsedArguments[$parsedArgumentIndex])) {
+                    $humanReadableIndex = $parsedArgumentIndex + 1;
+
+                    throw new SourceException("Argument number $humanReadableIndex does not exist at $intOrder ($instructionName->value) instruction");
+                }
+            }
+
+            $this->parsedInstructions[$intOrder] = new Instruction($instructionName, $parsedArguments, (int)$orderAttribute->value);
         }
     }
 
@@ -668,6 +710,7 @@ class Interpreter extends AbstractInterpreter
      * @throws OperandTypeException If some operand has wrong type
      * @throws SemanticException If some semantic error occurs
      * @throws XMLException If XML parsing error occurs
+     * @throws SourceException If XML parsing error occurs
      */
     public function execute(): int
     {
@@ -697,8 +740,14 @@ class Interpreter extends AbstractInterpreter
             }
         }
 
-        for (; $this->instructionCounter < count($this->parsedInstructions); $this->instructionCounter++) {
+        $sortedParsedInstructions = $this->parsedInstructions;
+        ksort($sortedParsedInstructions);
+
+        for (; $this->instructionCounter <= array_key_last($sortedParsedInstructions); $this->instructionCounter++) {
+            if (!isset($this->parsedInstructions[$this->instructionCounter])) continue;
+
             $instruction = $this->parsedInstructions[$this->instructionCounter];
+
             $buildInInstruction = BuiltInInstruction::getInstruction($instruction->getName());
             $executionInstruction = $buildInInstruction->getExecutionInstruction();
 

@@ -140,7 +140,7 @@ class Value
                 return '0.0';
             }
 
-            $string_value = (float)$value;
+            $string_value = (string)$value;
         }
 
         return $string_value;
@@ -182,6 +182,11 @@ class Value
     public function outputValueForSTDOUT(E_ARGUMENT_TYPE $type): string
     {
         $stream = fopen('php://memory', 'r+');
+
+        if (!$stream) {
+            throw new OutputFileException('Cannot open output');
+        }
+
         $outputWriter = new StreamWriter($stream);
 
         if ($type === E_ARGUMENT_TYPE::VAR) {
@@ -192,16 +197,16 @@ class Value
 
         switch ($type) {
             case E_ARGUMENT_TYPE::INT:
-                $outputWriter->writeInt($typedValue);
+                $outputWriter->writeInt((int)$typedValue);
                 break;
             case E_ARGUMENT_TYPE::BOOL:
-                $outputWriter->writeBool($typedValue);
+                $outputWriter->writeBool((bool)$typedValue);
                 break;
             case E_ARGUMENT_TYPE::STRING:
-                $outputWriter->writeString($typedValue);
+                $outputWriter->writeString((string)$typedValue);
                 break;
             case E_ARGUMENT_TYPE::FLOAT:
-                $outputWriter->writeFloat($typedValue);
+                $outputWriter->writeFloat((float)$typedValue);
                 break;
             default:
                 break;
@@ -211,7 +216,7 @@ class Value
         $outputValue = stream_get_contents($stream);
         fclose($stream);
 
-        if (strlen($outputValue) === 0 || $outputValue === false)
+        if ($outputValue === false || strlen($outputValue) === 0)
             $outputValue = '-';
 
         return $outputValue;

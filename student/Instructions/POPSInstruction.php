@@ -38,6 +38,11 @@ class POPSInstruction extends AbstractInstruction
         }
 
         $argumentValue = $interpreter->dataStack->pop();
+
+        if (is_null($argumentValue)) {
+            throw new Exception("Error while popping value from data stack");
+        }
+
         $type = $argumentValue->getType();
         $value = $argumentValue->getTypedValue();
 

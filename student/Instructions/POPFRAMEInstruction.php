@@ -26,6 +26,11 @@ class POPFRAMEInstruction extends AbstractInstruction
         }
 
         $frame = $interpreter->localFrameStack->pop();
+
+        if (is_null($frame)) {
+            throw new Exception("Error while popping frame from local frame stack");
+        }
+
         $frame->setFrame(E_VARIABLE_FRAME::TF);
 
         $interpreter->temporaryFrame = $frame;

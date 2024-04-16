@@ -112,7 +112,7 @@ class Debugger
             $table->addRow(
                 $index,
                 [
-                    'index' => $index + 1,
+                    'index' => strval($index + 1),
                     'type' => $value->getType()->value,
                     'value' => $value->getValue()->outputValueForSTDOUT($value->getType()),
                 ]
@@ -136,14 +136,19 @@ class Debugger
         foreach (array_reverse($this->interpreter->callStack->readItems()) as $index => $call) {
             $instruction = $this->interpreter->parsedInstructions[$call];
 
-            if ($instruction->getName() === E_INSTRUCTION_NAME::CALL)
-                $name = $instruction->getArgument(0)->getValue()->getValue();
+            if ($instruction->getName() === E_INSTRUCTION_NAME::CALL) {
+                $argument = $instruction->getArgument(0);
+
+                if (is_null($argument)) continue;
+
+                $name = $argument->getValue()->getValue();
+            }
 
             $table->addRow(
                 $index,
                 [
-                    'index' => $index + 1,
-                    'order' => $call,
+                    'index' => strval($index + 1),
+                    'order' => strval($call),
                     'opcode' => $instruction->getName()->value,
                     'label' => $name ?? '-',
                 ]
@@ -174,7 +179,7 @@ class Debugger
                 $name,
                 [
                     'name' => $name,
-                    'count' => $count,
+                    'count' => strval($count),
                     'percentage' => number_format($count / $total * 100, 2) . '%',
                 ]
             );
